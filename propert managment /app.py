@@ -19,15 +19,28 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
 
+class Owner(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    properties = db.relationship('Property', backref='owner', lazy=True)
+
 class Property(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)
-    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
+    units = db.relationship('Unit', backref='property', lazy=True)
+
+class Unit(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    unit_number = db.Column(db.String(50), nullable=False)
+    property_id = db.Column(db.Integer, db.ForeignKey('property.id'), nullable=False)
+    tenants = db.relationship('Tenant', backref='unit', lazy=True)
 
 class Tenant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)
-    property_id = db.Column(db.Integer, db.ForeignKey('property.id'), nullable=False)
+    unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'), nullable=False)
+    billings = db.relationship('Billing', backref='tenant', lazy=True)
 
 class Billing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -39,6 +52,14 @@ class Billing(db.Model):
 
     tenant = db.relationship('Tenant', backref='billings')
     property = db.relationship('Property', backref='billings')
+
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    billing_id = db.Column(db.Integer, db.ForeignKey('billing.id'), nullable=False)
+    amount_paid = db.Column(db.Float, nullable=False)
+    payment_date = db.Column(db.DateTime, default=datetime.utcnow)
+
+    billing = db.relationship('Billing', backref='payments')
 
 class Maintenance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -79,6 +100,7 @@ def generate_invoice(billing_id):
 
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name='invoice.pdf', mimetype='application/pdf')
+
 @app.route('/add_property', methods=['GET', 'POST'])
 @login_required
 def add_property():
@@ -124,9 +146,6 @@ def add_tenant():
     units = Unit.query.all()
     return render_template('add_tenant.html', units=units)
 
-
-
-
 @app.route('/submit_maintenance', methods=['POST'])
 @login_required
 def submit_maintenance():
@@ -147,7 +166,7 @@ def maintenance_requests():
 @login_required
 def pay_bill(bill_id):
     billing = Billing.query.get_or_404(bill_id)
-    billing.payment_status = 'Paid'
+    billing.is_paid = True  # Update the billing status to 'Paid'
 
     # Optionally add a payment record
     payment = Payment(billing_id=bill_id, amount_paid=billing.amount_due)
@@ -162,14 +181,11 @@ def view_bills(tenant_id):
     bills = Billing.query.filter_by(tenant_id=tenant_id).all()
     return render_template('view_bills.html', bills=bills)
 
-
-#view properties
 @app.route('/view_properties', methods=['GET'])
 @login_required
 def view_properties():
     properties = Property.query.all()  # Fetch all properties along with units and tenants
     return render_template('view_properties.html', properties=properties)
-
 
 if __name__ == '__main__':
     db.create_all()  # Create the database tables
