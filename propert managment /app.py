@@ -79,6 +79,39 @@ def generate_invoice(billing_id):
 
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name='invoice.pdf', mimetype='application/pdf')
+@app.route('/add_property', methods=['GET', 'POST'])
+@login_required
+def add_property():
+    if request.method == 'POST':
+        property_name = request.form['property_name']
+        owner_id = request.form['owner_id']
+        new_property = Property(name=property_name, owner_id=owner_id)
+        db.session.add(new_property)
+        db.session.commit()
+        flash('Property added successfully!', 'success')
+        return redirect(url_for('index'))
+
+    owners = Owner.query.all()
+    return render_template('add_property.html', owners=owners)
+
+@app.route('/add_unit', methods=['GET', 'POST'])
+@login_required
+def add_unit():
+    if request.method == 'POST':
+        unit_number = request.form['unit_number']
+        property_id = request.form['property_id']
+        new_unit = Unit(unit_number=unit_number, property_id=property_id)
+        db.session.add(new_unit)
+        db.session.commit()
+        flash('Unit added successfully!', 'success')
+        return redirect(url_for('index'))
+
+    properties = Property.query.all()
+    return render_template('add_unit.html', properties=properties)
+
+
+
+
 
 @app.route('/submit_maintenance', methods=['POST'])
 @login_required
