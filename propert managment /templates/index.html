@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Generate Rental Receipt</h1>
+    <form action="/generate_receipt" method="POST">
+        <label for="tenant_name">Tenant Name:</label>
+        <input type="text" id="tenant_name" name="tenant_name" required>
+        <br>
+        <label for="amount_received">Amount Received (KES):</label>
+        <input type="text" id="amount_received" name="amount_received" required>
+        <br>
+        <label for="property_name">Property Name:</label>
+        <input type="text" id="property_name" name="property_name" required>
+        <br>
+        <label for="month_of">For Month(s) Of:</label>
+        <input type="text" id="month_of" name="month_of" required>
+        <br>
+        <button type="submit">Generate Receipt</button>
+    </form>
+</body>
+</html>
