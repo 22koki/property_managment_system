@@ -109,6 +109,20 @@ def add_unit():
     properties = Property.query.all()
     return render_template('add_unit.html', properties=properties)
 
+@app.route('/add_tenant', methods=['GET', 'POST'])
+@login_required
+def add_tenant():
+    if request.method == 'POST':
+        tenant_name = request.form['tenant_name']
+        unit_id = request.form['unit_id']
+        new_tenant = Tenant(name=tenant_name, unit_id=unit_id)
+        db.session.add(new_tenant)
+        db.session.commit()
+        flash('Tenant added successfully!', 'success')
+        return redirect(url_for('index'))
+
+    units = Unit.query.all()
+    return render_template('add_tenant.html', units=units)
 
 
 
@@ -128,6 +142,34 @@ def submit_maintenance():
 def maintenance_requests():
     requests = Maintenance.query.filter_by(tenant_id=current_user.id).all()
     return render_template('maintenance_requests.html', requests=requests)
+
+@app.route('/pay_bill/<int:bill_id>', methods=['POST'])
+@login_required
+def pay_bill(bill_id):
+    billing = Billing.query.get_or_404(bill_id)
+    billing.payment_status = 'Paid'
+
+    # Optionally add a payment record
+    payment = Payment(billing_id=bill_id, amount_paid=billing.amount_due)
+    db.session.add(payment)
+    db.session.commit()
+    flash('Payment recorded successfully!', 'success')
+    return redirect(url_for('index'))
+
+@app.route('/view_bills/<int:tenant_id>', methods=['GET'])
+@login_required
+def view_bills(tenant_id):
+    bills = Billing.query.filter_by(tenant_id=tenant_id).all()
+    return render_template('view_bills.html', bills=bills)
+
+
+#view properties
+@app.route('/view_properties', methods=['GET'])
+@login_required
+def view_properties():
+    properties = Property.query.all()  # Fetch all properties along with units and tenants
+    return render_template('view_properties.html', properties=properties)
+
 
 if __name__ == '__main__':
     db.create_all()  # Create the database tables

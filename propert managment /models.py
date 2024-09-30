@@ -29,7 +29,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
-    
+
 
 
 
@@ -53,6 +53,12 @@ class Billing(db.Model):
 
     tenant = db.relationship('Tenant', backref='billings')
     property = db.relationship('Property', backref='billings')
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    billing_id = db.Column(db.Integer, db.ForeignKey('billing.id'))
+    amount_paid = db.Column(db.Float, nullable=False)
+    payment_date = db.Column(db.DateTime, default=datetime.utcnow)
+    billing = db.relationship('Billing', backref='payments', lazy=True)
 
 class Maintenance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
