@@ -32,6 +32,8 @@ class Property(db.Model):
     name = db.Column(db.String(150), nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
     units = db.relationship('Unit', backref='property', lazy=True)
+    billings = db.relationship('Billing', backref='property')  # Refers to the reverse of 'billing_records'
+
 
 class Unit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -43,7 +45,10 @@ class Tenant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)
     unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'), nullable=False)
-    billings = db.relationship('Billing', backref='tenant', lazy=True)
+    billings = db.relationship('Billing', backref='tenant')  # This is the reverse relationship for tenant_billings
+
+
+
 
 class Billing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -53,8 +58,8 @@ class Billing(db.Model):
     due_date = db.Column(db.Date, nullable=False)
     is_paid = db.Column(db.Boolean, default=False)
 
-    tenant = db.relationship('Tenant', backref='billings')
-    property = db.relationship('Property', backref='billings')
+    tenant = db.relationship('Tenant', backref='tenant_billings')  # Changed backref name to avoid conflict
+    property = db.relationship('Property', backref='billing_records')  # Changed backref name to avoid conflict
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -92,15 +97,38 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        new_user = User(username=username, password=password)
-        db.session.add(new_user)
-        db.session.commit()
-        flash('Registration successful!', 'success')
-        return redirect(url_for('login'))
-    return render_template('register.html')
+        username = request.form.get('username')
+        password = request.form.get('password')
 
+        # Validate input
+        if not username or not password:
+            flash('Username and password are required!', 'danger')
+            return redirect(url_for('register'))
+
+        # Check if the username already exists
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash('Username already exists!', 'danger')
+            return redirect(url_for('register'))
+
+        # Hash the password before storing
+        hashed_password = generate_password_hash(password)
+
+        # Create a new user
+        new_user = User(username=username, password=hashed_password)
+
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Registration successful!', 'success')
+            return redirect(url_for('login'))
+        except Exception as e:
+            db.session.rollback()  # Rollback if there is an error
+            print(f'Error during registration: {e}')  # Log the error
+            flash('Internal Server Error! Please try again.', 'danger')
+            return redirect(url_for('register'))
+
+    return render_template('register.html')
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
