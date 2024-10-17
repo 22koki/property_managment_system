@@ -25,12 +25,14 @@ class Property(db.Model):
     name = db.Column(db.String(150), nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
     units = db.relationship('Unit', back_populates='property', lazy=True)
-    billings = db.relationship('Billing', back_populates='property_ref', lazy=True)  # Changed to property_ref
+    billings = db.relationship('Billing', back_populates='property_ref', lazy=True)  # Use property_ref here
 
     owner = db.relationship('Owner', back_populates='properties')
 
     def __repr__(self):
         return f'<Property {self.name}, Owner ID: {self.owner_id}>'
+
+
 
 class Unit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -64,11 +66,13 @@ class Billing(db.Model):
     is_paid = db.Column(db.Boolean, default=False)
 
     tenant = db.relationship('Tenant', back_populates='billings')
-    property_ref = db.relationship('Property', back_populates='billings')  # Changed to property_ref
+    property_ref = db.relationship('Property', back_populates='billings')  # Consistent naming
+
     payments = db.relationship('Payment', back_populates='billing', lazy=True)
 
     def __repr__(self):
         return f'<Billing {self.id}, Amount Due: {self.amount_due}, Tenant ID: {self.tenant_id}>'
+
 
 class Maintenance(db.Model):
     id = db.Column(db.Integer, primary_key=True)

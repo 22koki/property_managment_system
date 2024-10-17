@@ -6,11 +6,15 @@ from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from flask_migrate import Migrate
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///properties.db'  # Use your preferred database
+
 app.config['SECRET_KEY'] = 'your_secret_key'
+# Serve static files from the 'static' directory automatically
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
@@ -32,8 +36,7 @@ class Property(db.Model):
     name = db.Column(db.String(150), nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
     units = db.relationship('Unit', backref='property', lazy=True)
-    billings = db.relationship('Billing', backref='property')  # Refers to the reverse of 'billing_records'
-
+    billings = db.relationship('Billing', backref='related_property', lazy=True)
 
 class Unit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -45,10 +48,7 @@ class Tenant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)
     unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'), nullable=False)
-    billings = db.relationship('Billing', backref='tenant')  # This is the reverse relationship for tenant_billings
-
-
-
+    billings = db.relationship('Billing', backref='related_tenant', lazy=True)
 
 class Billing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -58,8 +58,8 @@ class Billing(db.Model):
     due_date = db.Column(db.Date, nullable=False)
     is_paid = db.Column(db.Boolean, default=False)
 
-    tenant = db.relationship('Tenant', backref='tenant_billings')  # Changed backref name to avoid conflict
-    property = db.relationship('Property', backref='billing_records')  # Changed backref name to avoid conflict
+    tenant = db.relationship('Tenant', backref='tenant_billings')
+    property = db.relationship('Property', backref='billing_records')
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -85,10 +85,10 @@ def login():
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
 
-        if user and user.password == password:  # Ensure you hash passwords in production!
+        if user and check_password_hash(user.password, password):  # Check hashed password
             login_user(user)
             flash('Login successful!', 'success')
-            return redirect(url_for('index'))  # Redirect to the index page after login
+            return redirect(url_for('index'))
 
         flash('Login failed. Check your username and password.', 'danger')
         
@@ -129,6 +129,7 @@ def register():
             return redirect(url_for('register'))
 
     return render_template('register.html')
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -233,20 +234,19 @@ def pay_bill(bill_id):
     db.session.commit()
     flash('Payment recorded successfully!', 'success')
     return redirect(url_for('index'))
-
-@app.route('/view_bills/<int:tenant_id>', methods=['GET'])
-@login_required
-def view_bills(tenant_id):
-    bills = Billing.query.filter_by(tenant_id=tenant_id).all()
-    return render_template('view_bills.html', bills=bills)
-
 @app.route('/view_properties', methods=['GET'])
 @login_required
 def view_properties():
-    properties = Property.query.all()  # Fetch all properties along with units and tenants
-    return render_template('view_properties.html', properties=properties)
+    properties = Property.query.all()  # Fetch all properties from the database
+    return render_template('view_properties.html', properties=properties)  # Ensure this template exists
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    with app.app_context():
-     db.create_all()  # Create the database tables
     app.run(debug=True)

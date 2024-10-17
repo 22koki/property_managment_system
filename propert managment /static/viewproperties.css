@@ -1,0 +1,100 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4; /* Light background for property page */
+    color: #333;
+}
+
+header {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 30px 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.logo img {
+    width: 100px;
+    position: absolute;
+    left: 20px;
+    top: 20px;
+}
+
+h1, h2 {
+    margin: 10px 0;
+    color: #1f0c0c;
+    font-style: italic;
+
+}
+
+main {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    font-size: 2em;
+    color: #007BFF;
+    margin-bottom: 20px;
+}
+
+.property-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Space between properties */
+}
+
+.property-image {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.property-image img {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.property {
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    margin-left: 0%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.property h2 {
+    font-size: 1.5em;
+    font-style: italic;
+    color: #240504;
+    margin-bottom: 10px;
+}
+
+.property p {
+    margin: 5px 0;
+    font-size: 1.1em;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    margin-top: 30px;
+}
+
+footer p {
+    margin: 5px 0;
+    font-size: 0.9em;
+    color: #666;
+}
