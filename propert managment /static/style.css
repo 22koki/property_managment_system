@@ -7,6 +7,30 @@ body {
     background-size: cover;
     color: #333;
 }
+nav {
+    margin: 20px 0;
+}
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    justify-content: center; /* Center links horizontally */
+}
+
+nav ul li {
+    margin: 0 15px; /* Spacing between links */
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #007BFF; /* Link color */
+    font-weight: bold;
+}
+
+nav ul li a:hover {
+    text-decoration: underline; /* Underline on hover */
+}
 
 /* Header styling */
 header {
@@ -54,10 +78,18 @@ main {
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
+main h1 {
     text-align: center;
     color: #333;
     margin-bottom: 20px;
+}
+
+/* Flash messages styling */
+.flashes {
+    list-style-type: none;
+    padding: 0;
+    margin: 10px 0;
+    color: #d9534f; /* Bootstrap danger color */
 }
 
 /* Form styling */
@@ -88,7 +120,7 @@ label {
     color: #333;
 }
 
-input[type="text"], input[type="date"], input[type="time"] {
+input[type="text"], input[type="password"] {
     width: 100%;
     padding: 10px;
     margin-top: 5px;
