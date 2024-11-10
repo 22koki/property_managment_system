@@ -6,185 +6,170 @@
     <title>Rental Billing Statement Generator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body, html {
-            height: 100%;
-            width: 100%;
-            overflow-x: hidden;
-            background-color: #f7f9fc;
-            font-family: Arial, sans-serif;
-            color: #495057;
-        }
-        header {
-            display: flex;
-            align-items: center;
-            padding: 20px;
-            background-color: #343a40;
-            color: #ffffff;
-            width: 100%;
-            height: 100px;
-        }
-        header .logo img {
-            width: 80px;
-            height: auto;
-            margin-right: 20px;
-        }
-        header .header-text {
-            display: flex;
-            flex-direction: column;
+        /* Custom CSS */
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
         }
         .container {
-            max-width: 100%;
-            width: 100%;
-            margin: 20px auto;
+            max-width: 800px;
+            margin-top: 50px;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .statement-container {
             background-color: #ffffff;
             padding: 30px;
-            border-radius: 8px;
+            margin-top: 50px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        .table th, .table td {
-            vertical-align: middle;
+        .statement-container h3 {
+            margin-bottom: 20px;
         }
-        #statementPreview {
-            border-top: 2px solid #adb5bd;
-        }
-        .btn-primary, .btn-secondary, .btn-success {
-            border-radius: 25px;
+        .btn-primary {
             width: 100%;
+            margin-top: 15px;
+        }
+        .btn-success {
+            width: 100%;
+            margin-top: 15px;
+        }
+        .table th, .table td {
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <img src="/property_management/static/uploads/t.png" alt="ZURIPO Logo">
-        </div>
-        <div class="header-text">
-            <h1>ZURIPO Property Specialists</h1>
-            <p>Garden Estate, Off Northern Bypass, Nairobi</p>
-            <p>Phone: +254 792 262 000 | Email: info@zuripoproperties.co.ke</p>
-            <h2>Slogan: We Manage, We Rent, We Sell</h2>
-        </div>
-    </header>
-
     <div class="container">
         <h2 class="text-center">Rental Billing Statement Generator</h2>
-
+        
         <!-- Form for input -->
         <form id="billingForm">
+            <!-- Company Info -->
+            <fieldset class="mb-4">
+                <legend>Company Information</legend>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="companyName" placeholder="Company Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="companyAddress" placeholder="Company Address" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="companyPhone" placeholder="Phone Number" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="companyEmail" placeholder="Email" required>
+                </div>
+            </fieldset>
+
             <!-- Tenant Info -->
             <fieldset class="mb-4">
                 <legend>Tenant Information</legend>
-                <input type="text" class="form-control mb-2" id="tenantName" placeholder="Tenant Name" required>
-                <input type="text" class="form-control mb-2" id="tenantLocation" placeholder="Location" required>
-                <input type="text" class="form-control mb-2" id="tenantPhone" placeholder="Phone" required>
-                <input type="email" class="form-control mb-2" id="tenantEmail" placeholder="Email" required>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="tenantName" placeholder="Tenant Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="tenantLocation" placeholder="Location" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="tenantPhone" placeholder="Phone" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="tenantEmail" placeholder="Email" required>
+                </div>
             </fieldset>
 
             <!-- Property Info -->
             <fieldset class="mb-4">
                 <legend>Property Information</legend>
-                <input type="text" class="form-control mb-2" id="propertyLocation" placeholder="Property Location" required>
-                <input type="text" class="form-control mb-2" id="propertyOwner" placeholder="Property Owner" required>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="propertyLocation" placeholder="Property Location" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="propertyOwner" placeholder="Property Owner" required>
+                </div>
             </fieldset>
 
             <!-- Account Activity -->
             <fieldset class="mb-4">
                 <legend>Account Activity</legend>
-                <div id="activityTable">
-                    <table class="table table-bordered">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>Date</th>
-                                <th>Ref</th>
-                                <th>Description</th>
-                                <th>Debit (Ksh)</th>
-                                <th>Credit (Ksh)</th>
-                                <th>Amount (Ksh)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="activityTableBody">
-                            <tr>
-                                <td><input type="date" class="form-control" required></td>
-                                <td><input type="text" class="form-control" required></td>
-                                <td><input type="text" class="form-control" required></td>
-                                <td><input type="number" class="form-control" required></td>
-                                <td><input type="number" class="form-control" required></td>
-                                <td><input type="number" class="form-control" required></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <button type="button" class="btn btn-secondary mt-2" onclick="addRow()">Add Row</button>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="activityDate" placeholder="Date of Activity" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="activityRef" placeholder="Reference" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="activityDesc" placeholder="Description" required>
+                </div>
+                <div class="form-group">
+                    <input type="number" class="form-control" id="activityDebit" placeholder="Debit (Ksh)" required>
+                </div>
+                <div class="form-group">
+                    <input type="number" class="form-control" id="activityCredit" placeholder="Credit (Ksh)" required>
                 </div>
             </fieldset>
 
             <!-- Payment Info -->
             <fieldset class="mb-4">
                 <legend>Payment Information</legend>
-                <input type="text" class="form-control mb-2" id="bankName" placeholder="Bank Name" required>
-                <input type="text" class="form-control mb-2" id="accountNumber" placeholder="Account Number" required>
-                <input type="text" class="form-control mb-2" id="mpesaPaybill" placeholder="M-Pesa Paybill" required>
-                <input type="text" class="form-control mb-2" id="mpesaAccount" placeholder="Bank Account (M-Pesa)" required>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="bankName" placeholder="Bank Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="accountNumber" placeholder="Account Number" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="mpesaPaybill" placeholder="M-Pesa Paybill" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="mpesaAccount" placeholder="Bank Account (M-Pesa)" required>
+                </div>
             </fieldset>
 
             <!-- Button to generate statement -->
-            <button type="button" class="btn btn-primary mt-4" onclick="generateStatement()">Generate Statement</button>
+            <button type="button" class="btn btn-primary" onclick="generateStatement()">Generate Statement</button>
         </form>
     </div>
 
     <!-- Statement Preview Section -->
-    <div class="container" id="statementPreview" style="display: none;">
+    <div class="container statement-container" id="statementPreview" style="display: none;">
         <h3 class="text-center">Rental Billing Statement</h3>
         <div id="statementOutput"></div>
-        <button class="btn btn-success mt-4" id="downloadPdf" onclick="downloadPDF()">Download as PDF</button>
+        <button class="btn btn-success" id="downloadPdf" onclick="downloadPDF()">Download as PDF</button>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
-    <script>
-        function addRow() {
-            const tableBody = document.getElementById("activityTableBody");
-            const newRow = document.createElement("tr");
-            newRow.innerHTML = `
-                <td><input type="date" class="form-control" required></td>
-                <td><input type="text" class="form-control" required></td>
-                <td><input type="text" class="form-control" required></td>
-                <td><input type="number" class="form-control" required></td>
-                <td><input type="number" class="form-control" required></td>
-                <td><input type="number" class="form-control" required></td>
-            `;
-            tableBody.appendChild(newRow);
-        }
 
+    <script>
         function generateStatement() {
+            // Get form values
+            const companyName = document.getElementById('companyName').value;
+            const companyAddress = document.getElementById('companyAddress').value;
+            const companyPhone = document.getElementById('companyPhone').value;
+            const companyEmail = document.getElementById('companyEmail').value;
+
             const tenantName = document.getElementById('tenantName').value;
             const tenantLocation = document.getElementById('tenantLocation').value;
             const tenantPhone = document.getElementById('tenantPhone').value;
             const tenantEmail = document.getElementById('tenantEmail').value;
+
             const propertyLocation = document.getElementById('propertyLocation').value;
             const propertyOwner = document.getElementById('propertyOwner').value;
 
-            let accountActivityRows = '';
-            document.querySelectorAll("#activityTableBody tr").forEach(row => {
-                const cells = row.querySelectorAll("input");
-                accountActivityRows += `
-                    <tr>
-                        <td>${cells[0].value}</td>
-                        <td>${cells[1].value}</td>
-                        <td>${cells[2].value}</td>
-                        <td>${cells[3].value}</td>
-                        <td>${cells[4].value}</td>
-                        <td>${cells[5].value}</td>
-                    </tr>
-                `;
-            });
+            const activityDate = document.getElementById('activityDate').value;
+            const activityRef = document.getElementById('activityRef').value;
+            const activityDesc = document.getElementById('activityDesc').value;
+            const activityDebit = document.getElementById('activityDebit').value;
+            const activityCredit = document.getElementById('activityCredit').value;
 
+            // Prepare the statement
             const statement = `
+                <h4>Company Information</h4>
+                <p><strong>${companyName}</strong><br>${companyAddress}<br>Phone: ${companyPhone}<br>Email: ${companyEmail}</p>
+
                 <h4>Tenant Information</h4>
                 <p><strong>Name:</strong> ${tenantName}<br><strong>Location:</strong> ${tenantLocation}<br><strong>Phone:</strong> ${tenantPhone}<br><strong>Email:</strong> ${tenantEmail}</p>
 
@@ -193,23 +178,35 @@
 
                 <h4>Account Activity</h4>
                 <table class="table table-bordered">
-                    <thead>
-                        <tr><th>Date</th><th>Ref</th><th>Description</th><th>Debit (Ksh)</th><th>Credit (Ksh)</th><th>Amount (Ksh)</th></tr>
-                    </thead>
-                    <tbody>${accountActivityRows}</tbody>
+                    <tr><th>Date</th><th>Ref</th><th>Description</th><th>Debit (Ksh)</th><th>Credit (Ksh)</th></tr>
+                    <tr>
+                        <td>${activityDate}</td>
+                        <td>${activityRef}</td>
+                        <td>${activityDesc}</td>
+                        <td>${activityDebit}</td>
+                        <td>${activityCredit}</td>
+                    </tr>
                 </table>
+
+                <h4>Payment Information</h4>
+                <p><strong>Bank:</strong> ${document.getElementById('bankName').value}<br><strong>Account No:</strong> ${document.getElementById('accountNumber').value}</p>
+                <p><strong>M-Pesa Paybill:</strong> ${document.getElementById('mpesaPaybill').value}<br><strong>Bank Account (M-Pesa):</strong> ${document.getElementById('mpesaAccount').value}</p>
             `;
 
+            // Show statement
             document.getElementById('statementOutput').innerHTML = statement;
             document.getElementById('statementPreview').style.display = 'block';
         }
 
         function downloadPDF() {
-            const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-
-            doc.fromHTML(document.getElementById('statementOutput'), 10, 10);
-            doc.save('Rental_Billing_Statement.pdf');
+            doc.html(document.getElementById('statementPreview'), {
+                callback: function (doc) {
+                    doc.save('rental_statement.pdf');
+                },
+                margin: [10, 10, 10, 10],
+                autoPaging: true
+            });
         }
     </script>
 </body>
