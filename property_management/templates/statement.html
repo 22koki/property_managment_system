@@ -12,7 +12,7 @@
             font-family: 'Arial', sans-serif;
         }
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin-top: 50px;
         }
         .form-group {
@@ -27,88 +27,144 @@
         .statement-container h3 {
             margin-bottom: 20px;
         }
-        .btn-primary {
+        .btn-primary, .btn-success, .btn-info, .btn-danger {
             width: 100%;
             margin-top: 15px;
         }
+        .btn-primary {
+            background-color: #4CAF50; /* Green */
+            border-color: #4CAF50;
+        }
         .btn-success {
-            width: 100%;
-            margin-top: 15px;
+            background-color: #008CBA; /* Blue */
+            border-color: #008CBA;
+        }
+        .btn-info {
+            background-color: #FFC107; /* Yellow */
+            border-color: #FFC107;
+        }
+        .btn-danger {
+            background-color: #f44336; /* Red */
+            border-color: #f44336;
         }
         .table th, .table td {
             text-align: center;
+        }
+        header {
+            text-align: left;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        header .logo img {
+            width: 120px;
+            height: auto;
+        }
+        header h1 {
+            margin-top: 10px;
+            font-size: 2rem;
+            color: #333;
+        }
+        header p {
+            font-size: 1rem;
+            color: #777;
+        }
+        .side-by-side {
+            display: flex;
+            justify-content: space-between;
+        }
+        .side-by-side .form-group {
+            width: 48%;
+        }
+        .bottom-right {
+            position: fixed;
+            bottom: 10px;
+            right: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .balance-due {
+            margin-top: 20px;
+        }
+        .statement-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .statement-preview-header h3 {
+            margin-bottom: 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <header>
+            <div class="logo">
+                <img src="/property_management/static/uploads/t.png" alt="ZURIPO Logo">
+            </div>
+            <h1>ZURIPO Property Specialists</h1>
+            <p>Location: Garden Estate, Off Northern Bypass, Nairobi</p>
+            <p>Phone: +254 792 262 000 | Email: info@zuripoproperties.co.ke</p>
+            <h2>Slogan: We Manage, We Rent, We Sell</h2>
+        </header>
+
         <h2 class="text-center">Rental Billing Statement Generator</h2>
-        
+
         <!-- Form for input -->
         <form id="billingForm">
-            <!-- Company Info -->
+            <!-- Tenant and Property Info -->
             <fieldset class="mb-4">
-                <legend>Company Information</legend>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="companyName" placeholder="Company Name" required>
+                <legend>Tenant and Property Information</legend>
+                <div class="side-by-side">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="tenantName" placeholder="Tenant Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="tenantLocation" placeholder="Location" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="companyAddress" placeholder="Company Address" required>
+                <div class="side-by-side">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="tenantPhone" placeholder="Phone" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" class="form-control" id="tenantEmail" placeholder="Email" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="companyPhone" placeholder="Phone Number" required>
-                </div>
-                <div class="form-group">
-                    <input type="email" class="form-control" id="companyEmail" placeholder="Email" required>
-                </div>
-            </fieldset>
-
-            <!-- Tenant Info -->
-            <fieldset class="mb-4">
-                <legend>Tenant Information</legend>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="tenantName" placeholder="Tenant Name" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="tenantLocation" placeholder="Location" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="tenantPhone" placeholder="Phone" required>
-                </div>
-                <div class="form-group">
-                    <input type="email" class="form-control" id="tenantEmail" placeholder="Email" required>
-                </div>
-            </fieldset>
-
-            <!-- Property Info -->
-            <fieldset class="mb-4">
-                <legend>Property Information</legend>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="propertyLocation" placeholder="Property Location" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="propertyOwner" placeholder="Property Owner" required>
+                <div class="side-by-side">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="propertyLocation" placeholder="Property Location" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="propertyOwner" placeholder="Property Owner" required>
+                    </div>
                 </div>
             </fieldset>
 
             <!-- Account Activity -->
             <fieldset class="mb-4">
                 <legend>Account Activity</legend>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="activityDate" placeholder="Date of Activity" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="activityRef" placeholder="Reference" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="activityDesc" placeholder="Description" required>
-                </div>
-                <div class="form-group">
-                    <input type="number" class="form-control" id="activityDebit" placeholder="Debit (Ksh)" required>
-                </div>
-                <div class="form-group">
-                    <input type="number" class="form-control" id="activityCredit" placeholder="Credit (Ksh)" required>
-                </div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Reference</th>
+                            <th>Description</th>
+                            <th>Debit (Ksh)</th>
+                            <th>Credit (Ksh)</th>
+                            <th>Amount (Ksh)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" class="form-control" id="activityDate" placeholder="Date" required></td>
+                            <td><input type="text" class="form-control" id="activityRef" placeholder="Reference" required></td>
+                            <td><input type="text" class="form-control" id="activityDesc" placeholder="Description" required></td>
+                            <td><input type="number" class="form-control" id="activityDebit" placeholder="Debit (Ksh)" required></td>
+                            <td><input type="number" class="form-control" id="activityCredit" placeholder="Credit (Ksh)" required></td>
+                            <td><input type="number" class="form-control" id="activityAmount" placeholder="Amount (Ksh)" required></td>
+                        </tr>
+                    </tbody>
+                </table>
             </fieldset>
 
             <!-- Payment Info -->
@@ -135,9 +191,22 @@
 
     <!-- Statement Preview Section -->
     <div class="container statement-container" id="statementPreview" style="display: none;">
-        <h3 class="text-center">Rental Billing Statement</h3>
+        <div class="statement-preview-header">
+            <h3>Rental Billing Statement</h3>
+            <div class="balance-due">
+                <p><strong>Due Date:</strong> <span id="dueDate"></span></p>
+                <p><strong>Balance Due:</strong> <span id="finalBalance"></span></p>
+            </div>
+        </div>
         <div id="statementOutput"></div>
         <button class="btn btn-success" id="downloadPdf" onclick="downloadPDF()">Download as PDF</button>
+        <button class="btn btn-info" id="saveCloud" onclick="saveToCloud()">Save to Cloud</button>
+        <button class="btn btn-danger" id="deletePdf" onclick="deletePDF()">Delete</button>
+    </div>
+
+    <div class="bottom-right">
+        <p><strong>Due Date:</strong> <span id="dueDate"></span></p>
+        <p><strong>Balance Due:</strong> <span id="finalBalance"></span></p>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -146,67 +215,88 @@
     <script>
         function generateStatement() {
             // Get form values
-            const companyName = document.getElementById('companyName').value;
-            const companyAddress = document.getElementById('companyAddress').value;
-            const companyPhone = document.getElementById('companyPhone').value;
-            const companyEmail = document.getElementById('companyEmail').value;
-
             const tenantName = document.getElementById('tenantName').value;
             const tenantLocation = document.getElementById('tenantLocation').value;
             const tenantPhone = document.getElementById('tenantPhone').value;
             const tenantEmail = document.getElementById('tenantEmail').value;
-
             const propertyLocation = document.getElementById('propertyLocation').value;
             const propertyOwner = document.getElementById('propertyOwner').value;
-
+            
             const activityDate = document.getElementById('activityDate').value;
             const activityRef = document.getElementById('activityRef').value;
             const activityDesc = document.getElementById('activityDesc').value;
             const activityDebit = document.getElementById('activityDebit').value;
             const activityCredit = document.getElementById('activityCredit').value;
+            const activityAmount = document.getElementById('activityAmount').value;
+            
+            const bankName = document.getElementById('bankName').value;
+            const accountNumber = document.getElementById('accountNumber').value;
+            const mpesaPaybill = document.getElementById('mpesaPaybill').value;
+            const mpesaAccount = document.getElementById('mpesaAccount').value;
 
-            // Prepare the statement
-            const statement = `
-                <h4>Company Information</h4>
-                <p><strong>${companyName}</strong><br>${companyAddress}<br>Phone: ${companyPhone}<br>Email: ${companyEmail}</p>
+            const dueDate = new Date().toLocaleDateString();
+            const balanceDue = 1000; // Set the final balance dynamically based on user input
 
-                <h4>Tenant Information</h4>
-                <p><strong>Name:</strong> ${tenantName}<br><strong>Location:</strong> ${tenantLocation}<br><strong>Phone:</strong> ${tenantPhone}<br><strong>Email:</strong> ${tenantEmail}</p>
+            document.getElementById('dueDate').textContent = dueDate;
+            document.getElementById('finalBalance').textContent = balanceDue;
 
-                <h4>Property Information</h4>
-                <p><strong>Location:</strong> ${propertyLocation}<br><strong>Owner:</strong> ${propertyOwner}</p>
-
-                <h4>Account Activity</h4>
+            // Format the account activity in a table
+            const activityTable = `
+                <h3>Account Activity</h3>
                 <table class="table table-bordered">
-                    <tr><th>Date</th><th>Ref</th><th>Description</th><th>Debit (Ksh)</th><th>Credit (Ksh)</th></tr>
-                    <tr>
-                        <td>${activityDate}</td>
-                        <td>${activityRef}</td>
-                        <td>${activityDesc}</td>
-                        <td>${activityDebit}</td>
-                        <td>${activityCredit}</td>
-                    </tr>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Reference</th>
+                            <th>Description</th>
+                            <th>Debit (Ksh)</th>
+                            <th>Credit (Ksh)</th>
+                            <th>Amount (Ksh)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>${activityDate}</td>
+                            <td>${activityRef}</td>
+                            <td>${activityDesc}</td>
+                            <td>${activityDebit}</td>
+                            <td>${activityCredit}</td>
+                            <td>${activityAmount}</td>
+                        </tr>
+                    </tbody>
                 </table>
-
-                <h4>Payment Information</h4>
-                <p><strong>Bank:</strong> ${document.getElementById('bankName').value}<br><strong>Account No:</strong> ${document.getElementById('accountNumber').value}</p>
-                <p><strong>M-Pesa Paybill:</strong> ${document.getElementById('mpesaPaybill').value}<br><strong>Bank Account (M-Pesa):</strong> ${document.getElementById('mpesaAccount').value}</p>
             `;
 
-            // Show statement
-            document.getElementById('statementOutput').innerHTML = statement;
+            // Display the statement preview
             document.getElementById('statementPreview').style.display = 'block';
+            document.getElementById('statementOutput').innerHTML = `
+                <h3>Rental Statement for ${tenantName}</h3>
+                <p><strong>Tenant Location:</strong> ${tenantLocation}</p>
+                <p><strong>Tenant Phone:</strong> ${tenantPhone}</p>
+                <p><strong>Tenant Email:</strong> ${tenantEmail}</p>
+                <p><strong>Property Location:</strong> ${propertyLocation}</p>
+                <p><strong>Property Owner:</strong> ${propertyOwner}</p>
+                ${activityTable}
+            `;
         }
 
         function downloadPDF() {
+            const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.html(document.getElementById('statementPreview'), {
+
+            doc.html(document.querySelector("#statementPreview"), {
                 callback: function (doc) {
-                    doc.save('rental_statement.pdf');
-                },
-                margin: [10, 10, 10, 10],
-                autoPaging: true
+                    doc.save("Rental_Statement.pdf");
+                }
             });
+        }
+
+        function saveToCloud() {
+            alert("Cloud saving is currently not available.");
+        }
+
+        function deletePDF() {
+            alert("PDF file deleted.");
         }
     </script>
 </body>
