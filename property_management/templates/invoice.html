@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rental Billing Statement</title>
+    <link rel="stylesheet" type="text/css" href="/property_management/static/invoice.css">
+</head>
+<body>
+    <div class="invoice-container">
+        <header>
+            <img src="/property_management/static/uploads/t.png" alt="ZURIPO Logo">
+            <div class="company-details">
+                <h2>Zuripo Property Specialists Ltd</h2>
+                <p>Garden Estate, Off Northern Bypass</p>
+                <p>Nairobi</p>
+                <p>Phone: 254 792 262 000</p>
+                <p>Email: info@zuripoproperties.co.ke</p>
+            </div>
+            <div class="invoice-details">
+                <p><strong>Invoice Date:</strong> {{ data.invoice_date }}</p>
+                <p><strong>Invoice Number:</strong> {{ data.invoice_number }}</p>
+                <p><strong>Due Date:</strong> {{ data.due_date }}</p>
+                <p><strong>Status:</strong> {{ data.status }}</p>
+            </div>
+        </header>
+        <section class="billing-info">
+            <p><strong>Invoice To:</strong> {{ data.tenant_name }}</p>
+            <p><strong>Property:</strong> {{ data.property_name }}</p>
+        </section>
+        <section class="table">
+            <table>
+                <tr>
+                    <th>Description</th>
+                    <th>Amount</th>
+                </tr>
+                <tr>
+                    <td>Rent and other dues</td>
+                    <td>KES {{ data.amount_due }}</td>
+                </tr>
+            </table>
+            <p><strong>Total Due Amount:</strong> KES {{ data.amount_due }}</p>
+        </section>
+        <footer>
+            <p><strong>Payment Instructions:</strong></p>
+            <p>Pay via NCBA, A/c No. 440200019634, Garden City Branch A/c No. 0757930715</p>
+            <p>Pay via M-Pesa Paybill No. 714 777</p>
+            <p>Late payments attract Ksh. 250 per day</p>
+        </footer>
+    </div>
+</body>
+</html>

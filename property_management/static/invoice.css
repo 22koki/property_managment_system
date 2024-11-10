@@ -1,0 +1,41 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+.invoice-container {
+    width: 60%;
+    margin: auto;
+    border: 1px solid #ddd;
+    padding: 20px;
+}
+
+header, .billing-info, .table, footer {
+    margin-bottom: 20px;
+}
+
+.logo {
+    width: 150px;
+    margin-bottom: 20px;
+}
+
+.company-details, .invoice-details {
+    display: inline-block;
+    width: 45%;
+    vertical-align: top;
+}
+
+.table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+footer p {
+    font-size: 0.9em;
+    color: #555;
+}

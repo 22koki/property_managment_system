@@ -1,0 +1,113 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+.statement-container {
+    width: 70%;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+header.company-info,
+.statement-details,
+.tenant-info,
+.account-activity,
+.payment-info,
+.summary {
+    margin-bottom: 20px;
+}
+
+header.company-info h2 {
+    font-size: 1.5em;
+    color: #333;
+}
+
+header.company-info p {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.statement-details {
+    text-align: right;
+    font-size: 0.9em;
+}
+
+.tenant-info {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0;
+}
+
+.tenant-details, .property-details {
+    width: 45%;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.tenant-details h4, .property-details h4 {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.account-activity h4 {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.account-activity table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.account-activity table th, .account-activity table td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.account-activity table th {
+    background-color: #f0f0f0;
+}
+
+.payment-info {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0;
+}
+
+.bank-payment, .mpesa-payment {
+    width: 45%;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.payment-info h4 {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+footer.summary {
+    text-align: right;
+    padding-top: 20px;
+    font-size: 1em;
+    color: #333;
+}
+
+footer.summary p {
+    margin: 5px 0;
+}

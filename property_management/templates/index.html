@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="/static/uploads/t.png" alt="ZURIPO Logo">
+        </div>
+        
+        <h1>ZURIPO Property Specialists</h1>
+        <p>Location: Garden Estate, Off Northern Bypass, Nairobi</p>
+        <p>Phone: +254 792 262 000 | Email: info@zuripoproperties.co.ke</p>
+        <h2>Slogan: We Manage, We Rent, We Sell</h2>
+
+        <!-- Navigation Links -->
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+                <li><a href="{{ url_for('register') }}">Register</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Generate Rental Receipt</h1>
+        <form action="/generate_receipt" method="POST">
+            <fieldset>
+                <legend>Property Information</legend>
+                <label for="property_name">Property Name:</label>
+                <input type="text" id="property_name" name="property_name" required>
+                <label for="owner_name">Owner Name:</label>
+                <input type="text" id="owner_name" name="owner_name" required>
+                <label for="units">Units Under Property:</label>
+                <input type="text" id="units" name="units" required placeholder="e.g., Unit 1, Unit 2, ...">
+            </fieldset>
+            <fieldset>
+                <legend>Tenant Information</legend>
+                <label for="tenant_name">Tenant Name:</label>
+                <input type="text" id="tenant_name" name="tenant_name" required>
+            </fieldset>
+            <fieldset>
+                <legend>Billing Information</legend>
+                
+                <label for="amount_received">Amount Received (KES):</label>
+                <input type="text" id="amount_received" name="amount_received" required>
+                
+                <label for="month_of">For Month(s) Of:</label>
+                <input type="text" id="month_of" name="month_of" required>
+                
+                <label for="bank_paid_to">Bank Paid To:</label>
+                <input type="text" id="bank_paid_to" name="bank_paid_to" required>
+                
+                <label for="ref_no">Reference Number:</label>
+                <input type="text" id="ref_no" name="ref_no" required>
+                
+                <label for="outstanding_balance">Outstanding Balance (KES):</label>
+                <input type="text" id="outstanding_balance" name="outstanding_balance">
+                
+                <label for="balance_after_payment">Balance After Payment (KES):</label>
+                <input type="text" id="balance_after_payment" name="balance_after_payment">
+                
+                <label for="date_of_payment">Date of Payment:</label>
+                <input type="date" id="date_of_payment" name="date_of_payment" required>
+                
+                <label for="time_of_payment">Time of Payment:</label>
+                <input type="time" id="time_of_payment" name="time_of_payment" required>
+                
+            </fieldset>
+            
+            <button type="submit">Generate Receipt</button>
+        </form>
+        <a href="{{ url_for('view_properties') }}" class="nav-link">View Properties</a>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 ZURIPO Property Specialists</p>
+        <p>All Rights Reserved</p>
+    </footer>
+</body>
+</html>
