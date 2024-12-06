@@ -3,50 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rental Billing Statement</title>
-    <link rel="stylesheet" type="text/css" href="/property_management/static/invoice.css">
+    <title>Rental Invoice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #333;
+        }
+        .invoice-container {
+            max-width: 800px;
+            margin: auto;
+            border: 1px solid #ddd;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+        }
+        .header img {
+            width: 150px;
+        }
+        .invoice-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .invoice-details div {
+            width: 48%;
+        }
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .invoice-table th, .invoice-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .invoice-table th {
+            background-color: #f8f8f8;
+        }
+        .total {
+            font-weight: bold;
+            text-align: right;
+        }
+        .payment-info {
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .terms {
+            font-size: 0.85rem;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <div class="invoice-container">
-        <header>
-            <img src="/property_management/static/uploads/t.png" alt="ZURIPO Logo">
-            <div class="company-details">
-                <h2>Zuripo Property Specialists Ltd</h2>
-                <p>Garden Estate, Off Northern Bypass</p>
-                <p>Nairobi</p>
-                <p>Phone: 254 792 262 000</p>
-                <p>Email: info@zuripoproperties.co.ke</p>
+        <div class="header">
+            <img src="zuripo-logo.png" alt="Zuripo Property Specialists">
+            <h2>Zuripo Property Specialists Ltd</h2>
+            <p>Garden Estate, Off Northern Bypass, Nairobi</p>
+            <p>Phone: 254 792 262 000 | Email: info@zuripoproperties.co.ke</p>
+        </div>
+        <hr>
+        <div class="invoice-details">
+            <div>
+                <p><strong>Invoice To:</strong></p>
+                <p>{{ tenant_name }}</p>
+                <p>{{ tenant_address }}</p>
+                <p>{{ tenant_phone }}</p>
             </div>
-            <div class="invoice-details">
-                <p><strong>Invoice Date:</strong> {{ data.invoice_date }}</p>
-                <p><strong>Invoice Number:</strong> {{ data.invoice_number }}</p>
-                <p><strong>Due Date:</strong> {{ data.due_date }}</p>
-                <p><strong>Status:</strong> {{ data.status }}</p>
+            <div>
+                <p><strong>Invoice Details:</strong></p>
+                <p>Invoice Date: {{ invoice_date }}</p>
+                <p>Invoice Number: {{ invoice_number }}</p>
+                <p>Due Date: {{ due_date }}</p>
+                <p>Unit Number: {{ unit_number }}</p>
             </div>
-        </header>
-        <section class="billing-info">
-            <p><strong>Invoice To:</strong> {{ data.tenant_name }}</p>
-            <p><strong>Property:</strong> {{ data.property_name }}</p>
-        </section>
-        <section class="table">
-            <table>
+        </div>
+        <table class="invoice-table">
+            <thead>
                 <tr>
+                    <th>Date</th>
                     <th>Description</th>
+                    <th>Unit</th>
                     <th>Amount</th>
+                    <th>Payment</th>
+                    <th>Balance</th>
                 </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
                 <tr>
-                    <td>Rent and other dues</td>
-                    <td>KES {{ data.amount_due }}</td>
+                    <td>{{ item.date }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.unit }}</td>
+                    <td>{{ item.amount }}</td>
+                    <td>{{ item.payment }}</td>
+                    <td>{{ item.balance }}</td>
                 </tr>
-            </table>
-            <p><strong>Total Due Amount:</strong> KES {{ data.amount_due }}</p>
-        </section>
-        <footer>
-            <p><strong>Payment Instructions:</strong></p>
-            <p>Pay via NCBA, A/c No. 440200019634, Garden City Branch A/c No. 0757930715</p>
-            <p>Pay via M-Pesa Paybill No. 714 777</p>
-            <p>Late payments attract Ksh. 250 per day</p>
-        </footer>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="total">Total Due Amount: <strong>KES {{ total_due }}</strong></p>
+        <div class="payment-info">
+            <p><strong>Please Make Payment To:</strong></p>
+            <p>NCBA: A/C No. 440 200 019 6 | Garden City Branch</p>
+            <p>Lipa na M-Pesa: Paybill 714 777 | A/C No. 0757 930 715</p>
+        </div>
+        <div class="terms">
+            <p>Terms & Conditions:</p>
+            <p>You agree to pay your rental invoice by due date. Late payment will attract charges as specified in the tenancy agreement.</p>
+        </div>
+        <div class="footer">
+            <p>Thank you for your Tenancy with Us</p>
+            <p>For any inquiries, please contact us via our official communication channels.</p>
+        </div>
     </div>
 </body>
 </html>

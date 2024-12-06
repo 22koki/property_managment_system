@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rental Billing Statement Generator</title>
+    /*<title>Rental Billing Statement Generator</title>*/
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         /* Custom CSS */
@@ -83,16 +83,223 @@
             font-weight: bold;
         }
         .balance-due {
-            margin-top: 20px;
-        }
-        .statement-preview-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .statement-preview-header h3 {
-            margin-bottom: 0;
-        }
+            margin-top: 20px;}
+ 
+/* Container for the Statement */
+.statement-container {
+    max-width: 800px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 50px;
+}
+
+.statement-container h3 {
+    margin-bottom: 20px;
+}
+
+/* Header Styling */
+/* Header Styling */
+.statement-container header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-bottom: 2px solid #ccc;
+}
+
+.statement-container header .logo {
+    flex: 0 0 auto; /* Ensure logo doesn't stretch */
+    margin-right: 20px; /* Add some spacing to the right of the logo */
+}
+
+.statement-container header .logo img {
+    max-width: 100px; /* Adjust size for better space-saving */
+    height: auto;
+}
+
+.statement-container header .details {
+    flex: 1 1 auto; /* Allow the details to take remaining space */
+}
+
+.statement-container header .details h1 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin: 5px 0;
+}
+
+.statement-container header .details p {
+    font-size: 14px;
+    color: #666;
+    margin: 2px 0;
+}
+
+.statement-container header .details h2 {
+    font-size: 10px;
+    font-style: oblique;
+    color: #0d63d3;
+    margin-top: 2px;
+}
+
+
+/* Tenant and Property Info Styling */
+.tenant-property-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.tenant-info, .property-info {
+    width: 48%;
+    background: #f4f4f4;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.tenant-info h3, .property-info h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Account Activity Table */
+.table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+/* Payment Details Section */
+.payment-details {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.payment-method {
+    width: 48%;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+}
+
+.payment-method.bank {
+    background-color: #e0f7fa; /* Light blue */
+}
+
+.payment-method.mpesa {
+    background-color: #e8f5e9; /* Light green */
+}
+
+.payment-method h4 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.payment-method p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* Button Styling */
+.btn-primary, .btn-success, .btn-info, .btn-danger {
+    width: 100%;
+    margin-top: 15px;
+}
+
+.btn-primary {
+    background-color: #4CAF50; /* Green */
+    border-color: #4CAF50;
+}
+
+.btn-success {
+    background-color: #008CBA; /* Blue */
+    border-color: #008CBA;
+}
+
+.btn-info {
+    background-color: #FFC107; /* Yellow */
+    border-color: #FFC107;
+}
+
+.btn-danger {
+    background-color: #f44336; /* Red */
+    border-color: #f44336;
+}
+
+/* Bottom Right Section */
+.bottom-right {
+    position: fixed;
+    bottom: 10px;
+    right: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.balance-due {
+    margin-top: 20px;
+}
+
+/* Footer Styling */
+footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: #666;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .tenant-property-info, .payment-details {
+        flex-direction: column;
+    }
+
+    .tenant-info, .property-info, .payment-method {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .payment-method:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* Additional Styling for Form Elements */
+.container {
+    max-width: 900px;
+    margin-top: 50px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.side-by-side {
+    display: flex;
+    justify-content: space-between;
+}
+
+.side-by-side .form-group {
+    width: 48%;
+}
+
     </style>
 </head>
 <body>
@@ -104,10 +311,10 @@
             <h1>ZURIPO Property Specialists</h1>
             <p>Location: Garden Estate, Off Northern Bypass, Nairobi</p>
             <p>Phone: +254 792 262 000 | Email: info@zuripoproperties.co.ke</p>
-            <h2>Slogan: We Manage, We Rent, We Sell</h2>
+            <h2>We Manage, We Rent, We Sell</h2>
         </header>
 
-        <h2 class="text-center">Rental Billing Statement Generator</h2>
+     
 
         <!-- Form for input -->
         <form id="billingForm">
@@ -118,6 +325,7 @@
                     <div class="form-group">
                         <input type="text" class="form-control" id="tenantName" placeholder="Tenant Name" required>
                     </div>
+                    
                     <div class="form-group">
                         <input type="text" class="form-control" id="tenantLocation" placeholder="Location" required>
                     </div>
@@ -138,35 +346,42 @@
                         <input type="text" class="form-control" id="propertyOwner" placeholder="Property Owner" required>
                     </div>
                 </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="HouseNo" placeholder="House Number" required>
+                </div>
             </fieldset>
 
-            <!-- Account Activity -->
-            <fieldset class="mb-4">
-                <legend>Account Activity</legend>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Reference</th>
-                            <th>Description</th>
-                            <th>Debit (Ksh)</th>
-                            <th>Credit (Ksh)</th>
-                            <th>Amount (Ksh)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="text" class="form-control" id="activityDate" placeholder="Date" required></td>
-                            <td><input type="text" class="form-control" id="activityRef" placeholder="Reference" required></td>
-                            <td><input type="text" class="form-control" id="activityDesc" placeholder="Description" required></td>
-                            <td><input type="number" class="form-control" id="activityDebit" placeholder="Debit (Ksh)" required></td>
-                            <td><input type="number" class="form-control" id="activityCredit" placeholder="Credit (Ksh)" required></td>
-                            <td><input type="number" class="form-control" id="activityAmount" placeholder="Amount (Ksh)" required></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </fieldset>
-
+ <!-- Account Activity -->
+<fieldset class="mb-4">
+    <legend>Account Activity</legend>
+    <table class="table table-bordered" id="activityTable">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Reference</th>
+                <th>Description</th>
+                <th>Debit (Ksh)</th>
+                <th>Credit (Ksh)</th>
+                <th>Amount (Ksh)</th>
+                <th>Actions</th> <!-- Column for add/remove buttons -->
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="text" class="form-control" placeholder="Date" required></td>
+                <td><input type="text" class="form-control" placeholder="Reference" required></td>
+                <td><input type="text" class="form-control" placeholder="Description" required></td>
+                <td><input type="number" class="form-control" placeholder="Debit (Ksh)" required></td>
+                <td><input type="number" class="form-control" placeholder="Credit (Ksh)" required></td>
+                <td><input type="number" class="form-control" placeholder="Amount (Ksh)" required></td>
+                <td>
+                    <button type="button" class="btn btn-success btn-sm add-row">+</button>
+                    <button type="button" class="btn btn-danger btn-sm remove-row">-</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</fieldset>
             <!-- Payment Info -->
             <fieldset class="mb-4">
                 <legend>Payment Information</legend>
@@ -180,7 +395,7 @@
                     <input type="text" class="form-control" id="mpesaPaybill" placeholder="M-Pesa Paybill" required>
                 </div>
                 <div class="form-group">
-                    <input type="text" class="form-control" id="mpesaAccount" placeholder="Bank Account (M-Pesa)" required>
+                    <input type="text" class="form-control" id="mpesaAccount" placeholder="Bank Account Number " required>
                 </div>
             </fieldset>
 
@@ -191,113 +406,211 @@
 
     <!-- Statement Preview Section -->
     <div class="container statement-container" id="statementPreview" style="display: none;">
-        <div class="statement-preview-header">
-            <h3>Rental Billing Statement</h3>
-            <div class="balance-due">
-                <p><strong>Due Date:</strong> <span id="dueDate"></span></p>
-                <p><strong>Balance Due:</strong> <span id="finalBalance"></span></p>
+        <header>
+            <div class="header-top">
+                <div class="logo">
+                    <img src="/property_management/static/uploads/t.png" alt="ZURIPO Logo">
+                </div>
+                <div class="company-details">
+                    <h1>ZURIPO Property Specialists</h1>
+                    <p>Location: Garden Estate, Off Northern Bypass, Nairobi</p>
+                    <p>Phone: +254 792 262 000 | Email: info@zuripoproperties.co.ke</p>
+                    <h2>We Manage, We Rent, We Sell</h2>
+                </div>
+            </div>
+        </header>
+    
+        <div class="tenant-property-info">
+            <div class="tenant-info">
+                <h3>Tenant Information</h3>
+                <p><strong>Name:</strong> <span id="tenantNamePreview"></span></p>
+                <p><strong>Location:</strong> <span id="tenantLocationPreview"></span></p>
+                <p><strong>Phone:</strong> <span id="tenantPhonePreview"></span></p>
+                <p><strong>Email:</strong> <span id="tenantEmailPreview"></span></p>
+                <p><strong>House No:</strong> <span id="tenantHouseNoPreview"></span></p>
+            
+            </div>
+            <div class="property-info">
+                <h3>Property Information</h3>
+                <p><strong>Location:</strong> <span id="propertyLocationPreview"></span></p>
+                <p><strong>Owner:</strong> <span id="propertyOwnerPreview"></span></p>
             </div>
         </div>
+    
         <div id="statementOutput"></div>
-        <button class="btn btn-success" id="downloadPdf" onclick="downloadPDF()">Download as PDF</button>
-        <button class="btn btn-info" id="saveCloud" onclick="saveToCloud()">Save to Cloud</button>
-        <button class="btn btn-danger" id="deletePdf" onclick="deletePDF()">Delete</button>
+    
+       
+    
+        <div class="account-summary">
+            <h3>Account Activity</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Reference</th>
+                        <th>Description</th>
+                        <th>Debit (Ksh)</th>
+                        <th>Credit (Ksh)</th>
+                        <th>Amount (Ksh)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span id="activityDate"></span></td>
+                        <td><span id="activityRef"></span></td>
+                        <td><span id="activityDesc"></span></td>
+                        <td><span id="activityDebit"></span></td>
+                        <td><span id="activityCredit"></span></td>
+                        <td><span id="activityAmount"></span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="payment-details">
+                <h3>Please Make Payment To:</h3>
+                <div class="payment-method bank">
+                    <h4>Via Bank</h4>
+                    <p><strong>Bank Name:</strong> <span id="bankNamePreview"></span></p>
+                    <p><strong>Account Number:</strong> <span id="accountNumberPreview"></span></p>
+                </div>
+                <div class="payment-method mpesa">
+                    <h4>Via M-Pesa</h4>
+                    <p><strong>Paybill:</strong> <span id="mpesaPaybillPreview"></span></p>
+                    <p><strong>Account Name:</strong> <span id="mpesaAccountPreview"></span></p>
+                </div>
+            </div>
+            <div class="top-right">
+                <p><strong>Due Date:</strong> <span id="dueDate"></span></p>
+                <p><strong>House No:</strong> <span id="houseNo"></span></p>
+            </div>
+        </div>
+    
+        <div class="final-summary">
+            <p><strong>Due Date:</strong> <span id="dueDate"></span></p>
+            <p><strong>Balance Due:</strong> <span id="finalBalance"></span></p>
+        </div>
     </div>
-
-    <div class="bottom-right">
-        <p><strong>Due Date:</strong> <span id="dueDate"></span></p>
-        <p><strong>Balance Due:</strong> <span id="finalBalance"></span></p>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
+    
     <script>
         function generateStatement() {
-            // Get form values
+            // Fetch and preview values
             const tenantName = document.getElementById('tenantName').value;
             const tenantLocation = document.getElementById('tenantLocation').value;
             const tenantPhone = document.getElementById('tenantPhone').value;
             const tenantEmail = document.getElementById('tenantEmail').value;
             const propertyLocation = document.getElementById('propertyLocation').value;
             const propertyOwner = document.getElementById('propertyOwner').value;
-            
+    
             const activityDate = document.getElementById('activityDate').value;
             const activityRef = document.getElementById('activityRef').value;
             const activityDesc = document.getElementById('activityDesc').value;
             const activityDebit = document.getElementById('activityDebit').value;
             const activityCredit = document.getElementById('activityCredit').value;
             const activityAmount = document.getElementById('activityAmount').value;
+    
             
+    
+            const houseNo = document.getElementById('houseNo').value;
+            const dueDate = new Date().toLocaleDateString();
+            const balanceDue = parseFloat(activityDebit) - parseFloat(activityCredit);
+
             const bankName = document.getElementById('bankName').value;
             const accountNumber = document.getElementById('accountNumber').value;
             const mpesaPaybill = document.getElementById('mpesaPaybill').value;
             const mpesaAccount = document.getElementById('mpesaAccount').value;
-
-            const dueDate = new Date().toLocaleDateString();
-            const balanceDue = 1000; // Set the final balance dynamically based on user input
-
+    
+            // Assign values to preview
+            document.getElementById('tenantNamePreview').textContent = tenantName;
+            document.getElementById('tenantLocationPreview').textContent = tenantLocation;
+            document.getElementById('tenantPhonePreview').textContent = tenantPhone;
+            document.getElementById('tenantEmailPreview').textContent = tenantEmail;
+    
+            document.getElementById('propertyLocationPreview').textContent = propertyLocation;
+            document.getElementById('propertyOwnerPreview').textContent = propertyOwner;
+    
+            document.getElementById('activityDate').textContent = activityDate;
+            document.getElementById('activityRef').textContent = activityRef;
+            document.getElementById('activityDesc').textContent = activityDesc;
+            document.getElementById('activityDebit').textContent = activityDebit;
+            document.getElementById('activityCredit').textContent = activityCredit;
+            document.getElementById('activityAmount').textContent = activityAmount;
+    
+            document.getElementById('bankNamePreview').textContent = bankName;
+            document.getElementById('accountNumberPreview').textContent = accountNumber;
+            document.getElementById('mpesaPaybillPreview').textContent = mpesaPaybill;
+            document.getElementById('mpesaAccountPreview').textContent = mpesaAccount;
+    
             document.getElementById('dueDate').textContent = dueDate;
-            document.getElementById('finalBalance').textContent = balanceDue;
-
-            // Format the account activity in a table
-            const activityTable = `
-                <h3>Account Activity</h3>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Reference</th>
-                            <th>Description</th>
-                            <th>Debit (Ksh)</th>
-                            <th>Credit (Ksh)</th>
-                            <th>Amount (Ksh)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>${activityDate}</td>
-                            <td>${activityRef}</td>
-                            <td>${activityDesc}</td>
-                            <td>${activityDebit}</td>
-                            <td>${activityCredit}</td>
-                            <td>${activityAmount}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            `;
-
-            // Display the statement preview
+            document.getElementById('HouseNo').textContent = houseNo;
+            document.getElementById('finalBalance').textContent = balanceDue.toFixed(2);
+    
+            // Show the statement preview
             document.getElementById('statementPreview').style.display = 'block';
-            document.getElementById('statementOutput').innerHTML = `
-                <h3>Rental Statement for ${tenantName}</h3>
-                <p><strong>Tenant Location:</strong> ${tenantLocation}</p>
-                <p><strong>Tenant Phone:</strong> ${tenantPhone}</p>
-                <p><strong>Tenant Email:</strong> ${tenantEmail}</p>
-                <p><strong>Property Location:</strong> ${propertyLocation}</p>
-                <p><strong>Property Owner:</strong> ${propertyOwner}</p>
-                ${activityTable}
-            `;
         }
-
         function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+    const doc = new jsPDF();
+    doc.text("Rental Billing Statement", 10, 10);
+    // Add dynamic data here
+    doc.save("BillingStatement.pdf");
 
-            doc.html(document.querySelector("#statementPreview"), {
-                callback: function (doc) {
-                    doc.save("Rental_Statement.pdf");
-                }
-            });
-        }
+    // Function to create a new row
+function createNewRow() {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input type="text" class="form-control" placeholder="Date" required></td>
+        <td><input type="text" class="form-control" placeholder="Reference" required></td>
+        <td><input type="text" class="form-control" placeholder="Description" required></td>
+        <td><input type="number" class="form-control" placeholder="Debit (Ksh)" required></td>
+        <td><input type="number" class="form-control" placeholder="Credit (Ksh)" required></td>
+        <td><input type="number" class="form-control" placeholder="Amount (Ksh)" required></td>
+        <td>
+            <button type="button" class="btn btn-success btn-sm add-row">+</button>
+            <button type="button" class="btn btn-danger btn-sm remove-row">-</button>
+        </td>
+    `;
+    return row;
+}
 
-        function saveToCloud() {
-            alert("Cloud saving is currently not available.");
-        }
+// Add row event handler
+document.addEventListener('click', function (event) {
+    const table = document.getElementById('activityTable').getElementsByTagName('tbody')[0];
 
-        function deletePDF() {
-            alert("PDF file deleted.");
+    // Add a new row
+    if (event.target && event.target.classList.contains('add-row')) {
+        const newRow = createNewRow(); // Create the new row
+        table.appendChild(newRow); // Append the new row to the table
+    }
+
+    // Remove a row
+    if (event.target && event.target.classList.contains('remove-row')) {
+        const row = event.target.closest('tr');
+        const rowCount = table.rows.length;
+        if (rowCount > 1) { // Ensure at least one row remains
+            row.remove();
+        } else {
+            alert('You must have at least one row.');
         }
+    }
+});
+
+// Automatically add a new row when pressing "Enter" after filling the last input field
+document.getElementById('activityTable').addEventListener('keydown', function (event) {
+    const lastRow = this.querySelector('tbody tr:last-child');
+    const inputs = lastRow.querySelectorAll('input');
+    
+    // Check if the "Enter" key was pressed and if the last input field is focused
+    if (event.key === 'Enter') {
+        const lastInput = inputs[inputs.length - 1];
+        
+        // If the last input is focused, add a new row
+        if (document.activeElement === lastInput && lastInput.value !== '') {
+            const newRow = createNewRow(); // Create the new row
+            this.querySelector('tbody').appendChild(newRow); // Append the new row to the table
+        }
+    }
+});
+}
+
     </script>
+    
 </body>
 </html>
