@@ -1,176 +1,294 @@
-/* General body styling */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-image: url('../images/background.jpg'); /* Background image */
-    background-size: cover;
-    color: #333;
-}
-nav {
-    margin: 20px 0;
-}
 
-nav ul {
-    list-style-type: none;
-    padding: 0;
-    display: flex;
-    justify-content: center; /* Center links horizontally */
-}
-
-nav ul li {
-    margin: 0 15px; /* Spacing between links */
-}
-
-nav ul li a {
-    text-decoration: none;
-    color: #007BFF; /* Link color */
-    font-weight: bold;
-}
-
-nav ul li a:hover {
-    text-decoration: underline; /* Underline on hover */
-}
-
-/* Header styling */
-header {
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 30px 20px;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    position: relative;
-}
-
-.logo img {
-    width: 100px;
-    position: absolute;
-    left: 20px;
-    top: 20px;
-}
-
-header h1 {
-    margin: 0;
-    font-size: 2.2em;
-    font-weight: bold;
-    color: #333;
-}
-
-header p {
-    margin: 5px 0;
-    font-size: 1.1em;
-    color: #666;
-}
-
-header h2 {
-    margin: 10px 0;
-    font-size: 1.5em;
-    font-style: italic;
-    color: #007BFF; /* Slogan color */
-}
-
-/* Main content area */
-main {
+        /* Custom CSS */
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            max-width: 900px;
+            margin-top: 50px;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .statement-container {
+            background-color: #ffffff;
+            padding: 30px;
+            margin-top: 50px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .statement-container h3 {
+            margin-bottom: 20px;
+        }
+        .btn-primary, .btn-success, .btn-info, .btn-danger {
+            width: 100%;
+            margin-top: 15px;
+        }
+        .btn-primary {
+            background-color: #4CAF50; /* Green */
+            border-color: #4CAF50;
+        }
+        .btn-success {
+            background-color: #008CBA; /* Blue */
+            border-color: #008CBA;
+        }
+        .btn-info {
+            background-color: #FFC107; /* Yellow */
+            border-color: #FFC107;
+        }
+        .btn-danger {
+            background-color: #f44336; /* Red */
+            border-color: #f44336;
+        }
+        .table th, .table td {
+            text-align: center;
+        }
+        header {
+            text-align: left;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        header .logo img {
+            width: 120px;
+            height: auto;
+        }
+        header h1 {
+            margin-top: 10px;
+            font-size: 2rem;
+            color: #333;
+        }
+        header p {
+            font-size: 1rem;
+            color: #777;
+        }
+        .side-by-side {
+            display: flex;
+            justify-content: space-between;
+        }
+        .side-by-side .form-group {
+            width: 48%;
+        }
+        .bottom-right {
+            position: fixed;
+            bottom: 10px;
+            right: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .balance-due {
+            margin-top: 20px;}
+ 
+/* Container for the Statement */
+.statement-container {
     max-width: 800px;
-    margin: 50px auto;
-    background-color: rgba(255, 255, 255, 0.85);
+    margin: 20px auto;
+    background: #fff;
     padding: 30px;
     border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 50px;
 }
 
-main h1 {
-    text-align: center;
-    color: #333;
+.statement-container h3 {
     margin-bottom: 20px;
 }
 
-/* Flash messages styling */
-.flashes {
-    list-style-type: none;
-    padding: 0;
-    margin: 10px 0;
-    color: #d9534f; /* Bootstrap danger color */
-}
-
-/* Form styling */
-form {
+/* Header Styling */
+/* Header Styling */
+.statement-container header {
     display: flex;
-    flex-direction: column;
-    gap: 15px; /* Add space between form elements */
-}
-
-fieldset {
-    border: 1px solid #007BFF;
-    border-radius: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    background-color: #f9f9f9;
     padding: 20px;
-    background-color: rgba(255, 255, 255, 0.8);
+    border-bottom: 2px solid #ccc;
 }
 
-legend {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #007BFF;
-    padding: 0 10px;
+.statement-container header .logo {
+    flex: 0 0 auto; /* Ensure logo doesn't stretch */
+    margin-right: 20px; /* Add some spacing to the right of the logo */
 }
 
-label {
+.statement-container header .logo img {
+    max-width: 100px; /* Adjust size for better space-saving */
+    height: auto;
+}
+
+.statement-container header .details {
+    flex: 1 1 auto; /* Allow the details to take remaining space */
+}
+
+.statement-container header .details h1 {
+    font-size: 24px;
     font-weight: bold;
-    margin-bottom: 5px;
-    display: block;
     color: #333;
+    margin: 5px 0;
 }
 
-input[type="text"], input[type="password"] {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1em;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+.statement-container header .details p {
+    font-size: 14px;
+    color: #666;
+    margin: 2px 0;
 }
 
-/* Button styling */
-button {
-    padding: 12px 20px;
-    background-color: #007BFF;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    font-size: 1.2em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+.statement-container header .details h2 {
+    font-size: 10px;
+    font-style: oblique;
+    color: #0d63d3;
+    margin-top: 2px;
 }
 
-button:hover {
-    background-color: #0056b3;
-}
 
-/* Navigation link */
-.nav-link {
-    display: block;
-    text-align: center;
+/* Tenant and Property Info Styling */
+.tenant-property-info {
+    display: flex;
+    justify-content: space-between;
     margin-top: 20px;
-    text-decoration: none;
-    color: #007BFF;
+}
+
+.tenant-info, .property-info {
+    width: 48%;
+    background: #f4f4f4;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.tenant-info h3, .property-info h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
     font-weight: bold;
 }
 
-.nav-link:hover {
-    text-decoration: underline;
+/* Account Activity Table */
+.table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
 }
 
-/* Footer styling */
+.table th, .table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+/* Payment Details Section */
+.payment-details {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.payment-method {
+    width: 48%;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+}
+
+.payment-method.bank {
+    background-color: #e0f7fa; /* Light blue */
+}
+
+.payment-method.mpesa {
+    background-color: #e8f5e9; /* Light green */
+}
+
+.payment-method h4 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.payment-method p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* Button Styling */
+.btn-primary, .btn-success, .btn-info, .btn-danger {
+    width: 100%;
+    margin-top: 15px;
+}
+
+.btn-primary {
+    background-color: #4CAF50; /* Green */
+    border-color: #4CAF50;
+}
+
+.btn-success {
+    background-color: #008CBA; /* Blue */
+    border-color: #008CBA;
+}
+
+.btn-info {
+    background-color: #FFC107; /* Yellow */
+    border-color: #FFC107;
+}
+
+.btn-danger {
+    background-color: #f44336; /* Red */
+    border-color: #f44336;
+}
+
+/* Bottom Right Section */
+.bottom-right {
+    position: fixed;
+    bottom: 10px;
+    right: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.balance-due {
+    margin-top: 20px;
+}
+
+/* Footer Styling */
 footer {
     text-align: center;
-    padding: 20px;
-    background-color: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    font-size: 12px;
+    color: #666;
 }
 
-footer p {
-    margin: 5px 0;
-    font-size: 0.9em;
-    color: #666;
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .tenant-property-info, .payment-details {
+        flex-direction: column;
+    }
+
+    .tenant-info, .property-info, .payment-method {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .payment-method:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* Additional Styling for Form Elements */
+.container {
+    max-width: 900px;
+    margin-top: 50px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.side-by-side {
+    display: flex;
+    justify-content: space-between;
+}
+
+.side-by-side .form-group {
+    width: 48%;
 }

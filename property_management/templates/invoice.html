@@ -1,127 +1,379 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rental Invoice</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            color: #333;
-        }
-        .invoice-container {
-            max-width: 800px;
-            margin: auto;
-            border: 1px solid #ddd;
-            padding: 20px;
-        }
-        .header {
-            text-align: center;
-        }
-        .header img {
-            width: 150px;
-        }
-        .invoice-details {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .invoice-details div {
-            width: 48%;
-        }
-        .invoice-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        .invoice-table th, .invoice-table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-        .invoice-table th {
-            background-color: #f8f8f8;
-        }
-        .total {
-            font-weight: bold;
-            text-align: right;
-        }
-        .payment-info {
-            margin-top: 20px;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .terms {
-            font-size: 0.85rem;
-            margin-top: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rental Invoice Generator</title>
+  <style>
+    /* Main styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1, h3 {
+      text-align: center;
+      color: #007bff;
+    }
+    .company-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .company-header img {
+      max-width: 100px;
+    }
+    .company-header div {
+      text-align: right;
+    }
+    .company-header p {
+      margin: 5px 0;
+      color: #555;
+    }
+    .form-section {
+      margin-bottom: 20px;
+    }
+    .form-section h3 {
+      color: #333;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+    }
+    .info-section {
+      display: flex;
+      justify-content: space-between;
+    }
+    .info-section .form-group {
+      width: 45%;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      font-size: 1rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    table th, table td {
+      padding: 10px;
+      text-align: left;
+    }
+    table th {
+      background-color: #007bff;
+      color: white;
+    }
+    table td input {
+      width: 100%;
+      border: none;
+      outline: none;
+      padding: 5px;
+      font-size: 1rem;
+    }
+    table td input:focus {
+      border-bottom: 1px solid #007bff;
+    }
+    .add-row-btn {
+      display: inline-block;
+      margin: 10px 0;
+      padding: 10px 15px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+    .add-row-btn:hover {
+      background-color: #218838;
+    }
+    button {
+  background-color: #007BFF; /* Blue background */
+  color: white; /* White text */
+  padding: 10px 10px; /* Padding for a larger clickable area */
+  font-size: 12px; /* Font size */
+  border: none; /* Remove border */
+  border-radius: 15px; /* Rounded corners */
+  cursor: pointer; /* Change cursor to pointer on hover */
+  box-shadow: 4px 4px 9px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+}
+
+button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+  transform: scale(1.05); /* Slight zoom on hover */
+}
+
+button:active {
+  background-color: #003f7f; /* Even darker blue when clicked */
+  transform: scale(0.95); /* Slight shrink effect on click */
+}
+
+    .gener
+    .total-row td {
+      font-weight: bold;
+      text-align: right;
+      background-color: #d1a76b;
+    }
+    .terms-section {
+      margin-top: 20px;
+      border-top: 2px solid #007bff;
+      padding-top: 10px;
+    }
+    .terms-section h4 {
+      background-color: blue;
+      margin-bottom: 5px;
+      margin-right: 670px;
+    }
+    .terms-section p {
+      color: #000000;
+      font-size: larger;
+      font-style: italic;
+
+    }
+    .invoice-preview h3 {
+      color: #007bff;
+      text-align: center;
+    }
+    .invoice-section {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    /* Adds spacing above and below the line */
+    .yellowSeparator {
+      border: 0;
+      height: 30px;
+      background-color: rgb(221, 199, 0);
+      margin: 20px 0;
+     } /* Adds spacing above and below the line */
+
+
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .invoice-table th, .invoice-table td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    .invoice-table th {
+      background-color: #007bff;
+      color: white;
+    }
+    .invoice-total {
+      text-align: right;
+      font-weight: bold;
+      background-color: #d1a76b;
+    
+    }
+  </style>
 </head>
 <body>
-    <div class="invoice-container">
-        <div class="header">
-            <img src="zuripo-logo.png" alt="Zuripo Property Specialists">
-            <h2>Zuripo Property Specialists Ltd</h2>
-            <p>Garden Estate, Off Northern Bypass, Nairobi</p>
-            <p>Phone: 254 792 262 000 | Email: info@zuripoproperties.co.ke</p>
-        </div>
-        <hr>
-        <div class="invoice-details">
-            <div>
-                <p><strong>Invoice To:</strong></p>
-                <p>{{ tenant_name }}</p>
-                <p>{{ tenant_address }}</p>
-                <p>{{ tenant_phone }}</p>
-            </div>
-            <div>
-                <p><strong>Invoice Details:</strong></p>
-                <p>Invoice Date: {{ invoice_date }}</p>
-                <p>Invoice Number: {{ invoice_number }}</p>
-                <p>Due Date: {{ due_date }}</p>
-                <p>Unit Number: {{ unit_number }}</p>
-            </div>
-        </div>
-        <table class="invoice-table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Description</th>
-                    <th>Unit</th>
-                    <th>Amount</th>
-                    <th>Payment</th>
-                    <th>Balance</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in items %}
-                <tr>
-                    <td>{{ item.date }}</td>
-                    <td>{{ item.description }}</td>
-                    <td>{{ item.unit }}</td>
-                    <td>{{ item.amount }}</td>
-                    <td>{{ item.payment }}</td>
-                    <td>{{ item.balance }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <p class="total">Total Due Amount: <strong>KES {{ total_due }}</strong></p>
-        <div class="payment-info">
-            <p><strong>Please Make Payment To:</strong></p>
-            <p>NCBA: A/C No. 440 200 019 6 | Garden City Branch</p>
-            <p>Lipa na M-Pesa: Paybill 714 777 | A/C No. 0757 930 715</p>
-        </div>
-        <div class="terms">
-            <p>Terms & Conditions:</p>
-            <p>You agree to pay your rental invoice by due date. Late payment will attract charges as specified in the tenancy agreement.</p>
-        </div>
-        <div class="footer">
-            <p>Thank you for your Tenancy with Us</p>
-            <p>For any inquiries, please contact us via our official communication channels.</p>
-        </div>
+  <div class="container">
+    <!-- Company Header -->
+    <div class="company-header">
+      <img src="logo.png" alt="Company Logo">
+      <div>
+        <h2>Zuripo Property Specialists Ltd</h2>
+        <p>Garden Estate, Off Northern Bypass</p>
+        <p>Phone: 254 792 262 000</p>
+        <p>Email: info@zuripoproperties.co.ke</p>
+      </div>
     </div>
+
+    <!-- Form Section -->
+    <form id="invoice-form">
+      <!-- Tenant & Property Details -->
+      <div class="form-section">
+        <h3>Tenant & Property Details</h3>
+        <div class="info-section">
+          <div class="form-group">
+            <label for="tenant-name">Tenant Name</label>
+            <input type="text" id="tenant-name" placeholder="Enter tenant's name" required>
+            <label for="tenant-email">Email</label>
+            <input type="email" id="tenant-email" placeholder="Enter tenant's email" required>
+            <label for="tenant-phone">Phone</label>
+            <input type="text" id="tenant-phone" placeholder="Enter tenant's phone" required>
+          </div>
+          <div class="form-group">
+            <label for="property-address">Property Address</label>
+            <input type="text" id="property-address" placeholder="Enter property address" required>
+            <label for="tenant-location">Property Owner</label>
+            <input type="text" id="property-owner" placeholder="Enter property owner" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoice Items -->
+      <div class="form-section">
+        <h3>Invoice Items</h3>
+        <table id="items-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Unit</th>
+              <th>Price</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="date" class="item-date"></td>
+              <td><input type="text" class="item-description" placeholder="Description"></td>
+              <td><input type="number" class="item-unit" placeholder="Units)"></td>
+              <td><input type="number" class="item-price" placeholder="Price" ></td>
+              <td><input type="number" class="item-amount"placeholder="Amount"></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="4">Total</td>
+              <td id="total-amount">0</td>
+            </tr>
+          </tfoot>
+        </table>
+        <button type="button" class="add-row-btn" onclick="addRow()">Add Row</button>
+      </div>
+
+      <button type="button" onclick="generateInvoice()">Generate Invoice</button>
+    </form>
+
+    <!-- Invoice Preview -->
+    <div id="invoice-preview" class="invoice-preview" style="display: none;">
+      <h3>Rental Invoice</h3>
+      <div class="company-header">
+        <img src="logo.png" alt="Company Logo">
+        <div>
+          <h2>Zuripo Property Specialists Ltd</h2>
+          <p>Garden Estate, Off Northern Bypass</p>
+          <p>Phone: 254 792 262 000</p>
+          <p>Email: info@zuripoproperties.co.ke</p>
+        </div>
+      </div>
+      <div class="invoice-section">
+        <div>
+          <p><strong>Tenant Name:</strong> <span id="preview-tenant-name"></span></p>
+          <p><strong>Email:</strong> <span id="preview-tenant-email"></span></p>
+          <p><strong>Phone:</strong> <span id="preview-tenant-phone"></span></p>
+        </div>
+        <div>
+          <p><strong>Property Address:</strong> <span id="preview-property-address"></span></p>
+          <p><strong>Tenant Location:</strong> <span id="preview-tenant-location"></span></p>
+        </div>
+      </div>
+       <!-- Yellow Separator -->
+  <hr class="yellowSeparator">
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Unit</th>
+            <th>Price</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody id="invoice-items"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4" class="invoice-total">Total</td>
+            <td id="invoice-total-amount"></td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="terms-section">
+        <h4>Terms and Conditions</h4>
+        <p>All payments should be made by the due date. Late payments incur a fee of Kshs 250 per day.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function calculateRow(element) {
+      const row = element.closest("tr");
+      const unit = parseFloat(row.querySelector(".item-unit").value || 0);
+      const price = parseFloat(row.querySelector(".item-price").value || 0);
+      row.querySelector(".item-amount").textContent = (unit * price).toFixed(2);
+
+      calculateTotal();
+    }
+
+    function calculateTotal() {
+      const amounts = document.querySelectorAll(".item-amount");
+      let total = 0;
+      amounts.forEach(amount => {
+        total += parseFloat(amount.textContent);
+      });
+      document.getElementById("total-amount").textContent = total.toFixed(2);
+    }
+
+    function addRow() {
+      const tableBody = document.querySelector("#items-table tbody");
+      const newRow = document.createElement("tr");
+      newRow.innerHTML = `
+        <td><input type="date" class="item-date"></td>
+        <td><input type="text" class="item-description" placeholder="Description"></td>
+        <td><input type="number" class="item-unit" oninput="calculateRow(this)" placeholder="Units"></td>
+        <td><input type="number" class="item-price" oninput="calculateRow(this)" placeholder="Price"></td>
+        <td><span class="item-amount">0</span></td>
+      `;
+      tableBody.appendChild(newRow);
+    }
+
+    function generateInvoice() {
+      document.getElementById("invoice-preview").style.display = "block";
+      document.getElementById("preview-tenant-name").textContent = document.getElementById("tenant-name").value;
+      document.getElementById("preview-tenant-email").textContent = document.getElementById("tenant-email").value;
+      document.getElementById("preview-tenant-phone").textContent = document.getElementById("tenant-phone").value;
+      document.getElementById("preview-property-address").textContent = document.getElementById("property-address").value;
+      document.getElementById("preview-tenant-location").textContent = document.getElementById("tenant-location").value;
+
+      const tableBody = document.getElementById("invoice-items");
+      tableBody.innerHTML = "";
+      const rows = document.querySelectorAll("#items-table tbody tr");
+      rows.forEach(row => {
+        const date = row.querySelector(".item-date").value;
+        const description = row.querySelector(".item-description").value;
+        const unit = row.querySelector(".item-unit").value;
+        const price = row.querySelector(".item-price").value;
+        const amount = row.querySelector(".item-amount").textContent;
+
+        const newRow = document.createElement("tr");
+        newRow.innerHTML = `
+          <td>${date}</td>
+          <td>${description}</td>
+          <td>${unit}</td>
+          <td>${price}</td>
+          <td>${amount}</td>
+        `;
+        tableBody.appendChild(newRow);
+      });
+
+      document.getElementById("invoice-total-amount").textContent = document.getElementById("total-amount").textContent;
+    }
+  </script>
 </body>
 </html>
