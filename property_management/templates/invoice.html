@@ -107,6 +107,39 @@
     .add-row-btn:hover {
       background-color: #218838;
     }
+    /* Payment Details Section */
+.payment-details {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.payment-method {
+    width: 48%;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+}
+
+.payment-method.bank {
+    background-color: #e0f7fa; /* Light blue */
+}
+
+.payment-method.mpesa {
+    background-color: #e8f5e9; /* Light green */
+}
+
+.payment-method h4 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.payment-method p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
     button {
   background-color: #007BFF; /* Blue background */
   color: white; /* White text */
@@ -257,6 +290,22 @@ button:active {
         </table>
         <button type="button" class="add-row-btn" onclick="addRow()">Add Row</button>
       </div>
+        <!-- Payment Info -->
+        <fieldset class="mb-4">
+          <legend>Payment Information</legend>
+          <div class="form-group">
+              <input type="text" class="form-control" id="bankName" placeholder="Bank Name" required>
+          </div>
+          <div class="form-group">
+              <input type="text" class="form-control" id="accountNumber" placeholder="Account Number" required>
+          </div>
+          <div class="form-group">
+              <input type="text" class="form-control" id="mpesaPaybill" placeholder="M-Pesa Paybill" required>
+          </div>
+          <div class="form-group">
+              <input type="text" class="form-control" id="mpesaAccount" placeholder="Bank Account Number " required>
+          </div>
+      </fieldset>
 
       <button type="button" onclick="generateInvoice()">Generate Invoice</button>
     </form>
@@ -304,6 +353,19 @@ button:active {
           </tr>
         </tfoot>
       </table>
+      <div class="payment-details">
+        <h3>Please Make Payment To:</h3>
+        <div class="payment-method bank">
+            <h4>Via Bank</h4>
+            <p><strong>Bank Name:</strong> <span id="bankNamePreview"></span></p>
+            <p><strong>Account Number:</strong> <span id="accountNumberPreview"></span></p>
+        </div>
+        <div class="payment-method mpesa">
+            <h4>Via M-Pesa</h4>
+            <p><strong>Paybill:</strong> <span id="mpesaPaybillPreview"></span></p>
+            <p><strong>Account Name:</strong> <span id="mpesaAccountPreview"></span></p>
+        </div>
+    </div>
       <div class="terms-section">
         <h4>Terms and Conditions</h4>
         <p>All payments should be made by the due date. Late payments incur a fee of Kshs 250 per day.</p>
