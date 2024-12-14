@@ -194,7 +194,7 @@ button:active {
   <div class="container">
     <!-- Company Header -->
     <div class="company-header">
-      <img src="logo.png" alt="Company Logo">
+      <img src="/property_management/static/uploads/t.png" alt="Company Logo">
       <div>
         <h2>Zuripo Property Specialists Ltd</h2>
         <p>Garden Estate, Off Northern Bypass</p>
@@ -265,7 +265,7 @@ button:active {
     <div id="invoice-preview" class="invoice-preview" style="display: none;">
       <h3>Rental Invoice</h3>
       <div class="company-header">
-        <img src="logo.png" alt="Company Logo">
+        <img src="/property_management/static/uploads/t.png" alt="Company Logo">
         <div>
           <h2>Zuripo Property Specialists Ltd</h2>
           <p>Garden Estate, Off Northern Bypass</p>
@@ -316,64 +316,92 @@ button:active {
       const row = element.closest("tr");
       const unit = parseFloat(row.querySelector(".item-unit").value || 0);
       const price = parseFloat(row.querySelector(".item-price").value || 0);
-      row.querySelector(".item-amount").textContent = (unit * price).toFixed(2);
-
-      calculateTotal();
+      const amountField = row.querySelector(".item-amount");
+  
+      // Calculate and update the amount
+      const amount = unit * price;
+      amountField.value = amount.toFixed(2);
+  
+      // Update the total amount
+      updateTotalAmount();
     }
-
-    function calculateTotal() {
-      const amounts = document.querySelectorAll(".item-amount");
+  
+    function updateTotalAmount() {
+      const rows = document.querySelectorAll("#items-table tbody tr");
       let total = 0;
-      amounts.forEach(amount => {
-        total += parseFloat(amount.textContent);
+  
+      rows.forEach(row => {
+        const amount = parseFloat(row.querySelector(".item-amount").value || 0);
+        total += amount;
       });
+  
       document.getElementById("total-amount").textContent = total.toFixed(2);
     }
-
+  
     function addRow() {
       const tableBody = document.querySelector("#items-table tbody");
-      const newRow = document.createElement("tr");
-      newRow.innerHTML = `
+      const row = document.createElement("tr");
+  
+      row.innerHTML = `
         <td><input type="date" class="item-date"></td>
         <td><input type="text" class="item-description" placeholder="Description"></td>
-        <td><input type="number" class="item-unit" oninput="calculateRow(this)" placeholder="Units"></td>
-        <td><input type="number" class="item-price" oninput="calculateRow(this)" placeholder="Price"></td>
-        <td><span class="item-amount">0</span></td>
+        <td><input type="number" class="item-unit" placeholder="Units" oninput="calculateRow(this)"></td>
+        <td><input type="number" class="item-price" placeholder="Price" oninput="calculateRow(this)"></td>
+        <td><input type="number" class="item-amount" placeholder="Amount" readonly></td>
       `;
-      tableBody.appendChild(newRow);
+  
+      tableBody.appendChild(row);
     }
-
+  
     function generateInvoice() {
-      document.getElementById("invoice-preview").style.display = "block";
-      document.getElementById("preview-tenant-name").textContent = document.getElementById("tenant-name").value;
-      document.getElementById("preview-tenant-email").textContent = document.getElementById("tenant-email").value;
-      document.getElementById("preview-tenant-phone").textContent = document.getElementById("tenant-phone").value;
-      document.getElementById("preview-property-address").textContent = document.getElementById("property-address").value;
-      document.getElementById("preview-tenant-location").textContent = document.getElementById("tenant-location").value;
-
+      // Collect tenant and property details
+      const tenantName = document.getElementById("tenant-name").value;
+      const tenantEmail = document.getElementById("tenant-email").value;
+      const tenantPhone = document.getElementById("tenant-phone").value;
+      const propertyAddress = document.getElementById("property-address").value;
+      const propertyOwner = document.getElementById("property-owner").value;
+  
+      // Update preview details
+      document.getElementById("preview-tenant-name").textContent = tenantName;
+      document.getElementById("preview-tenant-email").textContent = tenantEmail;
+      document.getElementById("preview-tenant-phone").textContent = tenantPhone;
+      document.getElementById("preview-property-address").textContent = propertyAddress;
+      document.getElementById("preview-tenant-location").textContent = propertyOwner;
+  
+      // Populate invoice items
       const tableBody = document.getElementById("invoice-items");
-      tableBody.innerHTML = "";
+      tableBody.innerHTML = ""; // Clear previous rows
+  
       const rows = document.querySelectorAll("#items-table tbody tr");
+      let total = 0;
+  
       rows.forEach(row => {
         const date = row.querySelector(".item-date").value;
         const description = row.querySelector(".item-description").value;
-        const unit = row.querySelector(".item-unit").value;
-        const price = row.querySelector(".item-price").value;
-        const amount = row.querySelector(".item-amount").textContent;
-
+        const unit = parseFloat(row.querySelector(".item-unit").value || 0);
+        const price = parseFloat(row.querySelector(".item-price").value || 0);
+        const amount = parseFloat(row.querySelector(".item-amount").value || 0);
+  
+        total += amount;
+  
         const newRow = document.createElement("tr");
         newRow.innerHTML = `
           <td>${date}</td>
           <td>${description}</td>
           <td>${unit}</td>
-          <td>${price}</td>
-          <td>${amount}</td>
+          <td>${price.toFixed(2)}</td>
+          <td>${amount.toFixed(2)}</td>
         `;
         tableBody.appendChild(newRow);
       });
-
-      document.getElementById("invoice-total-amount").textContent = document.getElementById("total-amount").textContent;
+  
+      // Update total in the invoice preview
+      document.getElementById("invoice-total-amount").textContent = total.toFixed(2);
+  
+      // Show the invoice preview section
+      document.getElementById("invoice-preview").style.display = "block";
     }
   </script>
+  
 </body>
 </html>

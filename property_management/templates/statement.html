@@ -494,61 +494,85 @@ footer {
     </div>
     
     <script>
-        function generateStatement() {
-            // Fetch and preview values
-            const tenantName = document.getElementById('tenantName').value;
-            const tenantLocation = document.getElementById('tenantLocation').value;
-            const tenantPhone = document.getElementById('tenantPhone').value;
-            const tenantEmail = document.getElementById('tenantEmail').value;
-            const propertyLocation = document.getElementById('propertyLocation').value;
-            const propertyOwner = document.getElementById('propertyOwner').value;
-    
-            const activityDate = document.getElementById('activityDate').value;
-            const activityRef = document.getElementById('activityRef').value;
-            const activityDesc = document.getElementById('activityDesc').value;
-            const activityDebit = document.getElementById('activityDebit').value;
-            const activityCredit = document.getElementById('activityCredit').value;
-            const activityAmount = document.getElementById('activityAmount').value;
-    
-            
-    
-            const houseNo = document.getElementById('houseNo').value;
-            const dueDate = new Date().toLocaleDateString();
-            const balanceDue = parseFloat(activityDebit) - parseFloat(activityCredit);
+      function generateStatement() {
+    // Fetch values from the input table
+    const activityTable = document.getElementById('activityTable').getElementsByTagName('tbody')[0];
+    const statementOutput = document.querySelector('#statementPreview .account-summary tbody');
 
-            const bankName = document.getElementById('bankName').value;
-            const accountNumber = document.getElementById('accountNumber').value;
-            const mpesaPaybill = document.getElementById('mpesaPaybill').value;
-            const mpesaAccount = document.getElementById('mpesaAccount').value;
-    
-            // Assign values to preview
-            document.getElementById('tenantNamePreview').textContent = tenantName;
-            document.getElementById('tenantLocationPreview').textContent = tenantLocation;
-            document.getElementById('tenantPhonePreview').textContent = tenantPhone;
-            document.getElementById('tenantEmailPreview').textContent = tenantEmail;
-    
-            document.getElementById('propertyLocationPreview').textContent = propertyLocation;
-            document.getElementById('propertyOwnerPreview').textContent = propertyOwner;
-    
-            document.getElementById('activityDate').textContent = activityDate;
-            document.getElementById('activityRef').textContent = activityRef;
-            document.getElementById('activityDesc').textContent = activityDesc;
-            document.getElementById('activityDebit').textContent = activityDebit;
-            document.getElementById('activityCredit').textContent = activityCredit;
-            document.getElementById('activityAmount').textContent = activityAmount;
-    
-            document.getElementById('bankNamePreview').textContent = bankName;
-            document.getElementById('accountNumberPreview').textContent = accountNumber;
-            document.getElementById('mpesaPaybillPreview').textContent = mpesaPaybill;
-            document.getElementById('mpesaAccountPreview').textContent = mpesaAccount;
-    
-            document.getElementById('dueDate').textContent = dueDate;
-            document.getElementById('HouseNo').textContent = houseNo;
-            document.getElementById('finalBalance').textContent = balanceDue.toFixed(2);
-    
-            // Show the statement preview
-            document.getElementById('statementPreview').style.display = 'block';
-        }
+    // Clear the preview table to avoid duplication
+    statementOutput.innerHTML = '';
+
+    // Loop through each row in the input table
+    Array.from(activityTable.rows).forEach(row => {
+        const activityDate = row.cells[0].querySelector('input').value;
+        const activityRef = row.cells[1].querySelector('input').value;
+        const activityDesc = row.cells[2].querySelector('input').value;
+        const activityDebit = row.cells[3].querySelector('input').value;
+        const activityCredit = row.cells[4].querySelector('input').value;
+        const activityAmount = row.cells[5].querySelector('input').value;
+
+        // Create a new row in the output table
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>${activityDate}</td>
+            <td>${activityRef}</td>
+            <td>${activityDesc}</td>
+            <td>${activityDebit}</td>
+            <td>${activityCredit}</td>
+            <td>${activityAmount}</td>
+        `;
+
+        // Append the row to the preview table
+        statementOutput.appendChild(newRow);
+    });
+
+    // Fetch and preview other form values
+    const tenantName = document.getElementById('tenantName').value;
+    const tenantLocation = document.getElementById('tenantLocation').value;
+    const tenantPhone = document.getElementById('tenantPhone').value;
+    const tenantEmail = document.getElementById('tenantEmail').value;
+    const propertyLocation = document.getElementById('propertyLocation').value;
+    const propertyOwner = document.getElementById('propertyOwner').value;
+
+    const bankName = document.getElementById('bankName').value;
+    const accountNumber = document.getElementById('accountNumber').value;
+    const mpesaPaybill = document.getElementById('mpesaPaybill').value;
+    const mpesaAccount = document.getElementById('mpesaAccount').value;
+
+    const houseNo = document.getElementById('houseNo').value;
+    const dueDate = new Date().toLocaleDateString();
+
+    // Calculate balance
+    let totalDebit = 0, totalCredit = 0;
+    Array.from(activityTable.rows).forEach(row => {
+        totalDebit += parseFloat(row.cells[3].querySelector('input').value) || 0;
+        totalCredit += parseFloat(row.cells[4].querySelector('input').value) || 0;
+    });
+    const balanceDue = totalDebit - totalCredit;
+
+    // Update summary values
+    document.getElementById('tenantNamePreview').textContent = tenantName;
+    document.getElementById('tenantLocationPreview').textContent = tenantLocation;
+    document.getElementById('tenantPhonePreview').textContent = tenantPhone;
+    document.getElementById('tenantEmailPreview').textContent = tenantEmail;
+
+    document.getElementById('propertyLocationPreview').textContent = propertyLocation;
+    document.getElementById('propertyOwnerPreview').textContent = propertyOwner;
+
+    document.getElementById('bankNamePreview').textContent = bankName;
+    document.getElementById('accountNumberPreview').textContent = accountNumber;
+    document.getElementById('mpesaPaybillPreview').textContent = mpesaPaybill;
+    document.getElementById('mpesaAccountPreview').textContent = mpesaAccount;
+
+    document.getElementById('dueDate').textContent = dueDate;
+    document.getElementById('houseNo').textContent = houseNo;
+    document.getElementById('finalBalance').textContent = balanceDue.toFixed(2);
+
+    // Show the statement preview
+    document.getElementById('statementPreview').style.display = 'block';
+}
+
+
         function downloadPDF() {
     const doc = new jsPDF();
     doc.text("Rental Billing Statement", 10, 10);
