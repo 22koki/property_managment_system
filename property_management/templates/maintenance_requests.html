@@ -8,7 +8,163 @@
 </head>
 <body>
     <h1>Your Maintenance Requests</h1>
-    <ul>
+    <ul><!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Maintenance Page</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    padding: 0;
+                    background-color: #f4f4f9;
+                }
+                header {
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 1rem;
+                    text-align: center;
+                }
+                .container {
+                    max-width: 1200px;
+                    margin: 2rem auto;
+                    padding: 1rem;
+                    background: white;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    border-radius: 8px;
+                }
+                form {
+                    margin-bottom: 2rem;
+                }
+                form input, form textarea, form select, form button {
+                    width: 100%;
+                    padding: 0.8rem;
+                    margin: 0.5rem 0;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 2rem;
+                }
+                table th, table td {
+                    padding: 1rem;
+                    border: 1px solid #ddd;
+                    text-align: left;
+                }
+                table th {
+                    background-color: #4CAF50;
+                    color: white;
+                }
+                .action-buttons button {
+                    margin-right: 0.5rem;
+                    padding: 0.5rem 1rem;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                }
+                .action-buttons .view {
+                    background-color: #2196F3;
+                    color: white;
+                }
+                .action-buttons .update {
+                    background-color: #FF9800;
+                    color: white;
+                }
+                .action-buttons .delete {
+                    background-color: #F44336;
+                    color: white;
+                }
+                .filter-section {
+                    margin-bottom: 2rem;
+                    display: flex;
+                    justify-content: space-between;
+                }
+                .filter-section input, .filter-section select {
+                    width: 48%;
+                    padding: 0.8rem;
+                    margin: 0.5rem 0;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                }
+            </style>
+        </head>
+        <body>
+            <header>
+                <h1>Maintenance Requests</h1>
+            </header>
+            <div class="container">
+                <div class="filter-section">
+                    <input type="text" id="search" name="search" placeholder="Search by tenant or address">
+                    <select id="status-filter" name="status-filter">
+                        <option value="all">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <h2>Submit a Maintenance Request</h2>
+                <form id="maintenance-form">
+                    <label for="tenant-name">Tenant Name</label>
+                    <input type="text" id="tenant-name" name="tenant-name" placeholder="Enter your name" required>
+        
+                    <label for="property-address">Property Address</label>
+                    <input type="text" id="property-address" name="property-address" placeholder="Enter property address" required>
+        
+                    <label for="issue-type">Issue Type</label>
+                    <select id="issue-type" name="issue-type">
+                        <option value="plumbing">Plumbing</option>
+                        <option value="electrical">Electrical</option>
+                        <option value="structural">Structural</option>
+                        <option value="other">Other</option>
+                    </select>
+        
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="5" placeholder="Describe the issue" required></textarea>
+        
+                    <label for="upload-image">Upload Image</label>
+                    <input type="file" id="upload-image" name="upload-image">
+        
+                    <label for="preferred-date">Preferred Date</label>
+                    <input type="date" id="preferred-date" name="preferred-date" required>
+        
+                    <button type="submit">Submit Request</button>
+                </form>
+        
+                <h2>Current Maintenance Requests</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Tenant Name</th>
+                            <th>Property Address</th>
+                            <th>Issue Type</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>001</td>
+                            <td>John Doe</td>
+                            <td>123 Main Street</td>
+                            <td>Plumbing</td>
+                            <td>Pending</td>
+                            <td class="action-buttons">
+                                <button class="view">View</button>
+                                <button class="update">Update</button>
+                                <button class="delete">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </body>
+        </html>
+        
         {% for request in requests %}
             <li>
                 {{ request.description }} - Status: {{ request.status }} (Requested on {{ request.request_date }})

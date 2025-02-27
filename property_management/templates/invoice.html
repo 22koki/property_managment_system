@@ -65,10 +65,10 @@
       margin-bottom: 5px;
     }
     .form-group input {
-      width: 100%;
+      width: 88%;
       padding: 10px;
       border: 1px solid #ddd;
-      border-radius: 20px;
+      border-radius: 10px;
       font-size: 1rem;
     }
     table {
@@ -256,6 +256,15 @@ button:active {
             <label for="tenant-location">Property Owner</label>
             <input type="text" id="property-owner" placeholder="Enter property owner" required>
           </div>
+          <div class="form-group">
+            <label for="Invoice-no">Invoice-no</label>
+            <input type="text" id="Invoice-no" placeholder="Enter invoice number" required>
+            <label for="Date">Date</label>
+            <input type="text" id="Date" placeholder="Enter the date" required>
+            <label for="due-date">Due dateate</label>
+            <input type="text" id="due-date" placeholder="Enter due date" required>
+          </div> 
+
         </div>
       </div>
 
@@ -276,7 +285,7 @@ button:active {
             <tr>
               <td><input type="date" class="item-date"></td>
               <td><input type="text" class="item-description" placeholder="Description"></td>
-              <td><input type="number" class="item-unit" placeholder="Units)"></td>
+              <td><input type="number" class="item-unit" placeholder="Unit(s)"></td>
               <td><input type="number" class="item-price" placeholder="Price" ></td>
               <td><input type="number" class="item-amount"placeholder="Amount"></td>
             </tr>
@@ -291,21 +300,22 @@ button:active {
         <button type="button" class="add-row-btn" onclick="addRow()">Add Row</button>
       </div>
         <!-- Payment Info -->
-        <fieldset class="mb-4">
-          <legend>Payment Information</legend>
-          <div class="form-group">
-              <input type="text" class="form-control" id="bankName" placeholder="Bank Name" required>
-          </div>
-          <div class="form-group">
-              <input type="text" class="form-control" id="accountNumber" placeholder="Account Number" required>
-          </div>
-          <div class="form-group">
-              <input type="text" class="form-control" id="mpesaPaybill" placeholder="M-Pesa Paybill" required>
-          </div>
-          <div class="form-group">
-              <input type="text" class="form-control" id="mpesaAccount" placeholder="Bank Account Number " required>
-          </div>
-      </fieldset>
+<fieldset class="mb-4">
+  <legend>Payment Information</legend>
+  <div class="form-group">
+      <input type="text" class="form-control" id="bankName" placeholder="Bank Name" required>
+  </div>
+  <div class="form-group">
+      <input type="text" class="form-control" id="accountNumber" placeholder="Account Number" required>
+  </div>
+  <div class="form-group">
+      <input type="text" class="form-control" id="mpesaPaybill" placeholder="M-Pesa Paybill" required>
+  </div>
+  <div class="form-group">
+      <input type="text" class="form-control" id="mpesaAccount" placeholder="M-Pesa Account Name" required>
+  </div>
+</fieldset>
+
 
       <button type="button" onclick="generateInvoice()">Generate Invoice</button>
     </form>
@@ -332,6 +342,11 @@ button:active {
           <p><strong>Property Address:</strong> <span id="preview-property-address"></span></p>
           <p><strong>Tenant Location:</strong> <span id="preview-tenant-location"></span></p>
         </div>
+        <div>
+          <p><strong>Invoice No:</strong> <span id="preview-property-address"></span></p>
+          <p><strong>Date:</strong> <span id="preview-tenant-location"></span></p>
+          <p><strong>Due date:</strong> <span id="preview-tenant-location"></span></p>
+        </div>
       </div>
        <!-- Yellow Separator -->
   <hr class="yellowSeparator">
@@ -353,19 +368,21 @@ button:active {
           </tr>
         </tfoot>
       </table>
-      <div class="payment-details">
-        <h3>Please Make Payment To:</h3>
-        <div class="payment-method bank">
-            <h4>Via Bank</h4>
-            <p><strong>Bank Name:</strong> <span id="bankNamePreview"></span></p>
-            <p><strong>Account Number:</strong> <span id="accountNumberPreview"></span></p>
-        </div>
-        <div class="payment-method mpesa">
-            <h4>Via M-Pesa</h4>
-            <p><strong>Paybill:</strong> <span id="mpesaPaybillPreview"></span></p>
-            <p><strong>Account Name:</strong> <span id="mpesaAccountPreview"></span></p>
-        </div>
-    </div>
+      <!-- Payment Details Preview -->
+<div class="payment-details">
+  <h3>Please Make Payment To:</h3>
+  <div class="payment-method bank">
+      <h4>Via Bank</h4>
+      <p><strong>Bank Name:</strong> <span id="bankNamePreview"></span></p>
+      <p><strong>Account Number:</strong> <span id="accountNumberPreview"></span></p>
+  </div>
+  <div class="payment-method mpesa">
+      <h4>Via M-Pesa</h4>
+      <p><strong>Paybill:</strong> <span id="mpesaPaybillPreview"></span></p>
+      <p><strong>Account Name:</strong> <span id="mpesaAccountPreview"></span></p>
+  </div>
+</div>
+
       <div class="terms-section">
         <h4>Terms and Conditions</h4>
         <p>All payments should be made by the due date. Late payments incur a fee of Kshs 250 per day.</p>
@@ -379,6 +396,11 @@ button:active {
       const unit = parseFloat(row.querySelector(".item-unit").value || 0);
       const price = parseFloat(row.querySelector(".item-price").value || 0);
       const amountField = row.querySelector(".item-amount");
+
+    const bankName = document.getElementById('bankName').value;
+    const accountNumber = document.getElementById('accountNumber').value;
+    const mpesaPaybill = document.getElementById('mpesaPaybill').value;
+    const mpesaAccount = document.getElementById('mpesaAccount').value;
   
       // Calculate and update the amount
       const amount = unit * price;
@@ -429,7 +451,11 @@ button:active {
       document.getElementById("preview-tenant-phone").textContent = tenantPhone;
       document.getElementById("preview-property-address").textContent = propertyAddress;
       document.getElementById("preview-tenant-location").textContent = propertyOwner;
-  
+  // Update payment information preview
+  document.getElementById('bankNamePreview').innerText = document.getElementById('bankName').value;
+  document.getElementById('accountNumberPreview').innerText = document.getElementById('accountNumber').value;
+  document.getElementById('mpesaPaybillPreview').innerText = document.getElementById('mpesaPaybill').value;
+  document.getElementById('mpesaAccountPreview').innerText = document.getElementById('mpesaAccount').value;
       // Populate invoice items
       const tableBody = document.getElementById("invoice-items");
       tableBody.innerHTML = ""; // Clear previous rows

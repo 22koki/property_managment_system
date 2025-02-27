@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add New Tenant</title>
+</head>
+<style>
+    /* General Styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: left;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        header .logo img {
+            width: 120px;
+            height: auto;
+        }
+        header h1 {
+            margin-top: 10px;
+            font-size: 2rem;
+            color: #333;
+        }
+        header p {
+            font-size: 1rem;
+            color: #777;
+        }
+
+/* Form Title */
+h2 {
+    text-align: center;
+    color: #2c3e50;
+}
+/* General Styling */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Form Container */
+.container {
+    width: 50%;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+/* Form Title */
+h2 {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Form Layout */
+form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* Labels */
+label {
+    font-weight: 600;
+    text-align: left;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Inputs & Select */
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease-in-out;
+}
+
+input:focus, select:focus {
+    border-color: #2575fc;
+    box-shadow: 0 0 8px rgba(37, 117, 252, 0.4);
+    outline: none;
+}
+
+/* Full Width for Single Column Fields */
+input[name="rent_amount"] {
+    grid-column: span 2;
+}
+
+/* Submit Button */
+input[type="submit"] {
+    grid-column: span 2;
+    background: #2575fc;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease-in-out;
+}
+
+input[type="submit"]:hover {
+    background: #6a11cb;
+    transform: translateY(-3px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        width: 90%;
+        padding: 20px;
+    }
+    
+    form {
+        grid-template-columns: 1fr;
+    }
+
+    input[name="rent_amount"], input[type="submit"] {
+        grid-column: span 1;
+    }
+}
+
+
+</style> 
+<header>
+    <div class="logo">
+        <img src="/property_management/static/uploads/t.png" alt="ZURIPO Logo" width="100">
+    </div>
+    <h1>ZURIPO Property Specialists</h1>
+    <p>Location: Garden Estate, Off Northern Bypass, Nairobi</p>
+    <p>Phone: +254 792 262 000 | Email: info@zuripoproperties.co.ke</p>
+    <h2>We Manage, We Rent, We Sell</h2>
+</header>
+
+<body>
+    <h2>Add New Tenant</h2>
+    <form method="POST" action="/add_tenant">
+        <label>Name:</label>
+        <input type="text" name="name" required><br>
+        
+        <label>Email:</label>
+        <input type="email" name="email" required><br>
+        
+        <label>Phone Number:</label>
+        <input type="text" name="phone" required><br>
+        
+        <label>Unit/House No:</label>
+        <select name="unit_id" required>
+            {% for unit in units %}
+                <option value="{{ unit.id }}">{{ unit.unit_no }}</option>
+            {% endfor %}
+        </select><br>
+        
+        <label>Rent Amount:</label>
+        <input type="number" name="rent_amount" required><br>
+        
+        <input type="submit" value="Add Tenant">
+    </form>
+</body>
+</html>

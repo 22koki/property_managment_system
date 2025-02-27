@@ -1,98 +1,75 @@
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
-from datetime import datetime
 
-db = SQLAlchemy()
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://username:password@localhost/property_mgmt'
+db = SQLAlchemy(app)
 
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
-
-    def __repr__(self):
-        return f'<User {self.username}>'
-
-class Owner(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), nullable=False)
-    properties = db.relationship('Property', back_populates='owner', lazy=True)
-
-    def __repr__(self):
-        return f'<Owner {self.name}>'
-
+class User(db.Model):
+    __tablename__ = 'users'
+    user_id = db.Column(db.Integer, primary_key=True)
+    full_name = db.Column(db.String, nullable=False)
+    email = db.Column(db.String, unique=True, nullable=False)
+    phone = db.Column(db.String, nullable=False)
+    role = db.Column(db.String, nullable=False)
+    password_hash = db.Column(db.String, nullable=False)
 class Property(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), nullable=False)
-    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
-    units = db.relationship('Unit', back_populates='property', lazy=True)
-    billings = db.relationship('Billing', back_populates='property_ref', lazy=True)  # Use property_ref here
+    __tablename__ = 'properties'
+    property_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    owner = db.Column(db.String, nullable=False)
+    location = db.Column(db.String, nullable=False)
+    property_type = db.Column(db.String, nullable=False)
+    price = db.Column(db.Numeric(10,2), nullable=False)
+    bedrooms = db.Column(db.Integer, nullable=False)
+    available_units = db.Column(db.Integer, nullable=False)
+    size = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.String, nullable=True)
 
-    owner = db.relationship('Owner', back_populates='properties')
-
-    def __repr__(self):
-        return f'<Property {self.name}, Owner ID: {self.owner_id}>'
-
+# Create all tables (if not created)
+with app.app_context():
+    db.create_all()
 
 
 class Unit(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    unit_number = db.Column(db.String(50), nullable=False)
-    property_id = db.Column(db.Integer, db.ForeignKey('property.id'), nullable=False)
-    tenants = db.relationship('Tenant', back_populates='unit', lazy=True)
-
-    property = db.relationship('Property', back_populates='units')
-
-    def __repr__(self):
-        return f'<Unit {self.unit_number}, Property ID: {self.property_id}>'
+    __tablename__ = 'units'
+    unit_id = db.Column(db.Integer, primary_key=True)
+    property_id = db.Column(db.Integer, db.ForeignKey('properties.property_id', ondelete='CASCADE'), nullable=False)
+    unit_number = db.Column(db.String, nullable=False)
+    type = db.Column(db.String, nullable=False)
+    rent_amount = db.Column(db.Numeric(10,2), nullable=False)
 
 class Tenant(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), nullable=False)
-    unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'), nullable=False)
-    billings = db.relationship('Billing', back_populates='tenant', lazy=True)
-    maintenance_requests = db.relationship('Maintenance', back_populates='tenant', lazy=True)
+    __tablename__ = 'tenants'
+    tenant_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id', ondelete='CASCADE'), nullable=False)
+    phone = db.Column(db.String, nullable=False)
 
-    unit = db.relationship('Unit', back_populates='tenants')
-
-    def __repr__(self):
-        return f'<Tenant {self.name}, Unit ID: {self.unit_id}>'
-
-class Billing(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
-    property_id = db.Column(db.Integer, db.ForeignKey('property.id'), nullable=False)
-    amount_due = db.Column(db.Float, nullable=False)
-    due_date = db.Column(db.Date, nullable=False)
-    is_paid = db.Column(db.Boolean, default=False)
-
-    tenant = db.relationship('Tenant', back_populates='billings')
-    property_ref = db.relationship('Property', back_populates='billings')  # Consistent naming
-
-    payments = db.relationship('Payment', back_populates='billing', lazy=True)
-
-    def __repr__(self):
-        return f'<Billing {self.id}, Amount Due: {self.amount_due}, Tenant ID: {self.tenant_id}>'
-
-
-class Maintenance(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    tenant_id = db.Column(db.Integer, db.ForeignKey('tenant.id'), nullable=False)
-    description = db.Column(db.String(250), nullable=False)
-    request_date = db.Column(db.Date, nullable=False)
-    status = db.Column(db.String(50), default='Pending')  # e.g., Pending, In Progress, Completed
-
-    tenant = db.relationship('Tenant', back_populates='maintenance_requests')
-
-    def __repr__(self):
-        return f'<Maintenance Request {self.id}, Tenant ID: {self.tenant_id}, Status: {self.status}>'
+class Lease(db.Model):
+    __tablename__ = 'leases'
+    lease_id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.tenant_id', ondelete='CASCADE'), nullable=False)
+    unit_id = db.Column(db.Integer, db.ForeignKey('units.unit_id', ondelete='CASCADE'), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+    rent_amount = db.Column(db.Numeric(10,2), nullable=False)
 
 class Payment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    billing_id = db.Column(db.Integer, db.ForeignKey('billing.id'), nullable=False)
-    amount_paid = db.Column(db.Float, nullable=False)
-    payment_date = db.Column(db.Date, default=datetime.utcnow)
+    __tablename__ = 'payments'
+    payment_id = db.Column(db.Integer, primary_key=True)
+    lease_id = db.Column(db.Integer, db.ForeignKey('leases.lease_id', ondelete='CASCADE'), nullable=False)
+    amount_paid = db.Column(db.Numeric(10,2), nullable=False)
+    payment_date = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    billing = db.relationship('Billing', back_populates='payments')
+class MaintenanceRequest(db.Model):
+    __tablename__ = 'maintenance_requests'
+    request_id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.tenant_id', ondelete='CASCADE'), nullable=False)
+    unit_id = db.Column(db.Integer, db.ForeignKey('units.unit_id', ondelete='CASCADE'), nullable=False)
+    request_details = db.Column(db.String, nullable=False)
+    status = db.Column(db.String, default='pending')
+    request_date = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    def __repr__(self):
-        return f'<Payment {self.id}, Amount Paid: {self.amount_paid}, Billing ID: {self.billing_id}>'
+# Create all tables
+with app.app_context():
+    db.create_all()

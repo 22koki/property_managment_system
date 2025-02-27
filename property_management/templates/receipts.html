@@ -3,16 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rental Receipt</title>
-    <link rel="stylesheet" href="/property_management/static/style.css">
+    <title>Receipt</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            background-color: #4a90e2;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 5px 0;
+            font-size: 28px;
+        }
+
+        header p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        header h2 {
+            margin-top: 10px;
+            font-size: 18px;
+            font-style: italic;
+        }
+
+        .form-section {
+            background-color: #ffffff;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: bold;
+            width: 45%;
+        }
+
+        .form-control {
+            width: 45%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        #receipt-preview {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .receipt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .receipt-highlight {
+            background-color: #d0e5ff;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: right;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .main-info {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            margin-bottom: 20px;
+        }
+
+        .main-info p {
+            background-color: #fdd663;
+            padding: 8px 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .main-info p span:first-child {
+            color: black;
+            width: 150px;
+        }
+
+        .horizontal-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .horizontal-info div {
+            width: 48%;
+        }
+
+        .horizontal-info div p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Rental Receipt</h1>
-    <p><strong>Receipt Date:</strong> {{ receipt.receipt_date }}</p>
-    <p><strong>Tenant Name:</strong> {{ receipt.tenant_name }}</p>
-    <p><strong>Amount Received (KES):</strong> {{ receipt.amount_received }}</p>
-    <p><strong>Property Name:</strong> {{ receipt.property_name }}</p>
-    <p><strong>For Month(s) Of:</strong> {{ receipt.month_of }}</p>
-    <p>Thank you for your payment!</p>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <img src="/property_management/static/uploads/t.png" alt="ZURIPO Logo" width="100">
+            </div>
+            <h1>ZURIPO Property Specialists</h1>
+            <p>Location: Garden Estate, Off Northern Bypass, Nairobi</p>
+            <p>Phone: +254 792 262 000 | Email: info@zuripoproperties.co.ke</p>
+            <h2>We Manage, We Rent, We Sell</h2>
+        </header>
+
+        <!-- Fill-out Form Section -->
+        <section class="form-section">
+            <h2>Fill Out Receipt Details</h2>
+            <form id="receipt-form">
+                <div class="form-group">
+                    <div>
+                        <label for="received-by">Received By</label>
+                        <input type="text" id="received-by" class="form-control" required>
+                    </div>
+                    <div>
+                        <label for="payer-name">Name of Person Who Paid</label>
+                        <input type="text" id="payer-name" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div>
+                        <label for="amount-received">Amount Received</label>
+                        <input type="number" id="amount-received" class="form-control" required>
+                    </div>
+                    <div>
+                        <label for="account">Account</label>
+                        <input type="text" id="account" class="form-control" required>
+                    </div>
+                </div>
+                <!-- Other fields -->
+                <button type="button" onclick="generateReceipt()">Generate Receipt</button>
+
+            </form>
+        </section>
+
+        <!-- Receipt Preview Section -->
+        <section id="receipt-preview" style="display: none;">
+            <div class="receipt-header">
+                <div class="receipt-highlight">
+                    <p>Receipt Date: <span id="receipt-date"></span></p>
+                    <p>Receipt No: <span id="receipt-no"></span></p>
+                    <p>House No: <span id="house-no-preview"></span></p>
+                </div>
+            </div>
+
+            <div class="main-info">
+                <p><span>Received By:</span> <span id="received-by-preview"></span></p>
+                <p><span>Received From:</span> <span id="payer-name-preview"></span></p>
+                <p><span>Amount Received:</span> <span id="amount-received-preview"></span></p>
+                <p><span>For Account:</span> <span id="account-preview"></span></p>
+                <p><span>Months Of:</span> <span id="months-preview"></span></p>
+            </div>
+
+            <div class="horizontal-info">
+                <div>
+                    <p>Property Location: <span id="property-location-preview"></span></p>
+                    <p>Property Owner: <span id="property-owner-preview"></span></p>
+                    <p>Transaction Ref: <span id="reference-no-preview"></span></p>
+                </div>
+                <div>
+                    <p>Amount Outstanding: <span id="amount-outstanding-preview"></span></p>
+                    <p>Amount Paid: <span id="amount-paid-preview"></span></p>
+                    <p>Balance Due: <span id="balance-due-preview"></span></p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+            function generateReceipt() {
+        // Retrieve form values
+        const receivedBy = document.getElementById("received-by").value;
+        const payerName = document.getElementById("payer-name").value;
+        const amountReceived = document.getElementById("amount-received").value;
+        const account = document.getElementById("account").value;
+
+        // Simulate other fields for preview (can be filled later from form or dynamic inputs)
+        const receiptDate = new Date().toLocaleDateString();
+        const receiptNo = Math.floor(Math.random() * 1000000); // Generate a random receipt number
+        const houseNo = "A-101"; // Example house number
+        const months = "Jan - Mar 2024"; // Example months of payment
+        const propertyLocation = "Garden Estate";
+        const propertyOwner = "John Doe";
+        const transactionRef = "TXN12345"; // Example reference
+        const amountOutstanding = "10,000";
+        const amountPaid = amountReceived; // Using amount received
+        const balanceDue = "0"; // Example balance due (change logic as needed)
+
+        // Fill in the receipt preview section
+        document.getElementById("receipt-date").innerText = receiptDate;
+        document.getElementById("receipt-no").innerText = receiptNo;
+        document.getElementById("house-no-preview").innerText = houseNo;
+        document.getElementById("received-by-preview").innerText = receivedBy;
+        document.getElementById("payer-name-preview").innerText = payerName;
+        document.getElementById("amount-received-preview").innerText = amountReceived;
+        document.getElementById("account-preview").innerText = account;
+        document.getElementById("months-preview").innerText = months;
+        document.getElementById("property-location-preview").innerText = propertyLocation;
+        document.getElementById("property-owner-preview").innerText = propertyOwner;
+        document.getElementById("reference-no-preview").innerText = transactionRef;
+        document.getElementById("amount-outstanding-preview").innerText = amountOutstanding;
+        document.getElementById("amount-paid-preview").innerText = amountPaid;
+        document.getElementById("balance-due-preview").innerText = balanceDue;
+
+        // Show the receipt preview
+        document.getElementById("receipt-preview").style.display = "block";
+    }
+
+    </script>
 </body>
 </html>

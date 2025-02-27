@@ -3,28 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Property</title>
+    <title>Add / Update Property</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div class="container mt-5">
-        <h2>Add New Property</h2>
-        <form method="POST">
+        <h1 class="text-center" id="form-title">Add Property</h1>
+        
+        <form id="property-form">
+            <input type="hidden" id="property_id"> <!-- Hidden field for update -->
             <div class="form-group">
-                <label for="property_name">Property Name</label>
-                <input type="text" class="form-control" id="property_name" name="property_name" required>
+                <label for="name">Property Name</label>
+                <input type="text" class="form-control" id="name" required>
             </div>
             <div class="form-group">
-                <label for="owner_id">Select Owner</label>
-                <select class="form-control" id="owner_id" name="owner_id" required>
-                    {% for owner in owners %}
-                        <option value="{{ owner.id }}">{{ owner.name }}</option>
-                    {% endfor %}
-                </select>
+                <label for="owner">Owner</label>
+                <input type="text" class="form-control" id="owner" required>
             </div>
-            <button type="submit" class="btn btn-primary">Add Property</button>
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" class="form-control" id="location" required>
+            </div>
+            <div class="form-group">
+                <label for="property_type">Property Type</label>
+                <input type="text" class="form-control" id="property_type" required>
+            </div>
+            <div class="form-group">
+                <label for="price">Price (KES)</label>
+                <input type="number" class="form-control" id="price" required>
+            </div>
+            <div class="form-group">
+                <label for="bedrooms">Bedrooms</label>
+                <input type="number" class="form-control" id="bedrooms" required>
+            </div>
+            <div class="form-group">
+                <label for="available_units">Available Units</label>
+                <input type="number" class="form-control" id="available_units" required>
+            </div>
+            <div class="form-group">
+                <label for="size">Size</label>
+                <input type="text" class="form-control" id="size" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea class="form-control" id="description"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Property</button>
         </form>
-        <a href="{{ url_for('index') }}" class="btn btn-secondary mt-2">Back to Dashboard</a>
     </div>
+
+    <script>
+        $(document).ready(function () {
+            let urlParams = new URLSearchParams(window.location.search);
+            let propertyId = urlParams.get("id");
+
+            if (propertyId) {
+                $("#form-title").text("Update Property"); // Change form title
+
+                // Fetch existing property details and pre-fill the form
+                $.getJSON(`http://127.0.0.1:5000/properties/${propertyId}`, function (data) {
+                    $("#property_id").val(data.property_id);
+                    $("#name").val(data.name);
+                    $("#owner").val(data.owner);
+                    $("#location").val(data.location);
+                    $("#property_type").val(data.property_type);
+                    $("#price").val(data.price);
+                    $("#bedrooms").val(data.bedrooms);
+                    $("#available_units").val(data.available_units);
+                    $("#size").val(data.size);
+                    $("#description").val(data.description || "");
+                });
+            }
+
+            // Handle form submission (Add or Update)
+            $("#property-form").submit(function (event) {
+                event.preventDefault();
+
+                let propertyData = {
+                    name: $("#name").val(),
+                    owner: $("#owner").val(),
+                    location: $("#location").val(),
+                    property_type: $("#property_type").val(),
+                    price: parseFloat($("#price").val()),
+                    bedrooms: parseInt($("#bedrooms").val()),
+                    available_units: parseInt($("#available_units").val()),
+                    size: $("#size").val(),
+                    description: $("#description").val(),
+                };
+
+                if (propertyId) {
+                    // Update existing property
+                    $.ajax({
+                        url: `http://127.0.0.1:5000/properties/${propertyId}`,
+                        type: "PUT",
+                        contentType: "application/json",
+                        data: JSON.stringify(propertyData),
+                        success: function () {
+                            alert("Property updated successfully!");
+                            window.location.href = "view_properties.html"; // Redirect back
+                        },
+                        error: function () {
+                            alert("Error updating property.");
+                        }
+                    });
+                } else {
+                    // Add new property
+                    $.ajax({
+                        url: "http://127.0.0.1:5000/properties",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(propertyData),
+                        success: function () {
+                            alert("Property added successfully!");
+                            window.location.href = "view_properties.html"; // Redirect back
+                        },
+                        error: function () {
+                            alert("Error adding property.");
+                        }
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

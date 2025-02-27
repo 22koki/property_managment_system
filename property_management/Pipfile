@@ -8,6 +8,9 @@ flask-sqlalchemy = "*"
 flask-login = "*"
 reportlab = "*"
 flask-migrate = "*"
+flask = "*"
+flask-cors = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 
