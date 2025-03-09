@@ -88,48 +88,61 @@
                     });
             }
 
-            // Handle form submission
             $("#unit-form").submit(function (event) {
-                event.preventDefault();
+    event.preventDefault();  // Prevent form default submission
 
-                let propertyId = $("#property-select").val();
-                if (!propertyId) {
-                    alert("Please select a property first.");
-                    return;
-                }
+    let propertyId = $("#property-select").val();
+    if (!propertyId) {
+        alert("Please select a property first.");
+        return;
+    }
 
-                let unitData = {
-                    property_id: propertyId,
-                    unit_number: $("#unit-number").val(),
-                    rent_price: $("#rent-price").val(),
-                    is_available: $("#is-available").val() === "true",
-                    description: $("#description").val()
-                };
+    // ✅ Make sure unitData is defined here before using it
+    let unitData = {
+        property_id: propertyId,
+        unit_number: $("#unit-number").val(),
+        rent_price: parseFloat($("#rent-price").val()), // Ensure number
+        is_available: $("#is-available").val() === "true",
+        description: $("#description").val().trim() // Remove extra spaces
+    };
 
-                let unitId = $("#unit-id").val();
-                if (unitId) {
-                    // Update unit
-                    $.ajax({
-                        url: `http://127.0.0.1:5000/units/${unitId}`,
-                        type: "PUT",
-                        contentType: "application/json",
-                        data: JSON.stringify(unitData),
-                        success: function () {
-                            alert("Unit updated successfully");
-                            $("#unit-form")[0].reset();
-                            $("#unit-id").val("");
-                            loadUnits(propertyId);
-                        }
-                    });
-                } else {
-                    // Add unit
-                    $.post("http://127.0.0.1:5000/units", JSON.stringify(unitData), function () {
-                        alert("Unit added successfully");
-                        $("#unit-form")[0].reset();
-                        loadUnits(propertyId);
-                    }, "json");
-                }
-            });
+    let unitId = $("#unit-id").val();
+    if (unitId) {
+        // Update existing unit
+        $.ajax({
+            url: `http://127.0.0.1:5000/units/${unitId}`,
+            type: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify(unitData),
+            success: function () {
+                alert("Unit updated successfully");
+                $("#unit-form")[0].reset();
+                $("#unit-id").val("");
+                loadUnits(propertyId);
+            },
+            error: function (xhr) {
+                alert("Error updating unit: " + xhr.responseText);
+            }
+        });
+    } else {
+        // Add new unit
+        $.ajax({
+            url: "http://127.0.0.1:5000/units",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(unitData), // ✅ Ensure JSON format
+            success: function () {
+                alert("Unit added successfully");
+                $("#unit-form")[0].reset();
+                loadUnits(propertyId);
+            },
+            error: function (xhr) {
+                alert("Error adding unit: " + xhr.responseText);
+            }
+        });
+    }
+});
+
 
             // Edit unit function
             window.editUnit = function (id, number, price, available, description) {
