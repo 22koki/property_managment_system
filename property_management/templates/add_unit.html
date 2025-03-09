@@ -3,28 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Unit</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Units Management</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2>Add New Unit</h2>
-        <form method="POST">
-            <div class="form-group">
-                <label for="unit_number">Unit Number</label>
-                <input type="text" class="form-control" id="unit_number" name="unit_number" required>
-            </div>
-            <div class="form-group">
-                <label for="property_id">Select Property</label>
-                <select class="form-control" id="property_id" name="property_id" required>
-                    {% for property in properties %}
-                        <option value="{{ property.id }}">{{ property.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Add Unit</button>
-        </form>
-        <a href="{{ url_for('index') }}" class="btn btn-secondary mt-2">Back to Dashboard</a>
-    </div>
+
+    <h2>Units in Property</h2>
+
+    <!-- Property selection -->
+    <label for="property-select">Select Property:</label>
+    <select id="property-select">
+        <option value="">-- Select Property --</option>
+    </select>
+
+    <h3>Add / Update Unit</h3>
+    <form id="unit-form">
+        <input type="hidden" id="unit-id">
+        <label>Unit Number:</label>
+        <input type="text" id="unit-number" required>
+        
+        <label>Rent Price:</label>
+        <input type="number" id="rent-price" required>
+
+        <label>Availability:</label>
+        <select id="is-available">
+            <option value="true">Available</option>
+            <option value="false">Not Available</option>
+        </select>
+
+        <label>Description:</label>
+        <input type="text" id="description">
+
+        <button type="submit">Save Unit</button>
+    </form>
+
+    <h3>Existing Units</h3>
+    <div id="units-list"></div>
+
+    <script>
+        $(document).ready(function () {
+            // Fetch properties
+            $.getJSON("http://127.0.0.1:5000/properties", function (data) {
+                let propertyDropdown = $("#property-select");
+                data.forEach(property => {
+                    propertyDropdown.append(`<option value="${property.property_id}">${property.name}</option>`);
+                });
+            });
+
+            // Fetch units when property is selected
+            $("#property-select").change(function () {
+                let propertyId = $(this).val();
+                if (!propertyId) {
+                    $("#units-list").html("<p>Please select a property</p>");
+                    return;
+                }
+                loadUnits(propertyId);
+            });
+
+            function loadUnits(propertyId) {
+                $.getJSON(`http://127.0.0.1:5000/properties/${propertyId}/units`)
+                    .done(function (data) {
+                        let unitsHtml = "";
+                        if (data.length === 0) {
+                            unitsHtml = "<p>No units available for this property.</p>";
+                        } else {
+                            data.forEach(unit => {
+                                unitsHtml += `
+                                    <div>
+                                        <h3>Unit ${unit.unit_number}</h3>
+                                        <p>Rent: Ksh ${unit.rent_price}</p>
+                                        <p>Status: ${unit.is_available ? "Available" : "Not Available"}</p>
+                                        <p>Description: ${unit.description || "No description"}</p>
+                                        <button onclick="editUnit(${unit.unit_id}, '${unit.unit_number}', ${unit.rent_price}, ${unit.is_available}, '${unit.description}')">Edit</button>
+                                        <button onclick="deleteUnit(${unit.unit_id})">Delete</button>
+                                        <hr>
+                                    </div>
+                                `;
+                            });
+                        }
+                        $("#units-list").html(unitsHtml);
+                    })
+                    .fail(function () {
+                        $("#units-list").html("<p>Error loading units</p>");
+                    });
+            }
+
+            // Handle form submission
+            $("#unit-form").submit(function (event) {
+                event.preventDefault();
+
+                let propertyId = $("#property-select").val();
+                if (!propertyId) {
+                    alert("Please select a property first.");
+                    return;
+                }
+
+                let unitData = {
+                    property_id: propertyId,
+                    unit_number: $("#unit-number").val(),
+                    rent_price: $("#rent-price").val(),
+                    is_available: $("#is-available").val() === "true",
+                    description: $("#description").val()
+                };
+
+                let unitId = $("#unit-id").val();
+                if (unitId) {
+                    // Update unit
+                    $.ajax({
+                        url: `http://127.0.0.1:5000/units/${unitId}`,
+                        type: "PUT",
+                        contentType: "application/json",
+                        data: JSON.stringify(unitData),
+                        success: function () {
+                            alert("Unit updated successfully");
+                            $("#unit-form")[0].reset();
+                            $("#unit-id").val("");
+                            loadUnits(propertyId);
+                        }
+                    });
+                } else {
+                    // Add unit
+                    $.post("http://127.0.0.1:5000/units", JSON.stringify(unitData), function () {
+                        alert("Unit added successfully");
+                        $("#unit-form")[0].reset();
+                        loadUnits(propertyId);
+                    }, "json");
+                }
+            });
+
+            // Edit unit function
+            window.editUnit = function (id, number, price, available, description) {
+                $("#unit-id").val(id);
+                $("#unit-number").val(number);
+                $("#rent-price").val(price);
+                $("#is-available").val(available.toString());
+                $("#description").val(description);
+            };
+
+            // Delete unit function
+            window.deleteUnit = function (unitId) {
+                if (confirm("Are you sure you want to delete this unit?")) {
+                    $.ajax({
+                        url: `http://127.0.0.1:5000/units/${unitId}`,
+                        type: "DELETE",
+                        success: function () {
+                            alert("Unit deleted successfully");
+                            let propertyId = $("#property-select").val();
+                            loadUnits(propertyId);
+                        }
+                    });
+                }
+            };
+        });
+    </script>
+
 </body>
 </html>
