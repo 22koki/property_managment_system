@@ -27,7 +27,7 @@ class Property(db.Model):
     size = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=True)
 
-    # Establish relationship with Unit model
+    # ✅ Relationship with Unit model
     units = db.relationship('Unit', backref='property', lazy=True, cascade="all, delete-orphan")
 
     def to_dict(self):
@@ -45,6 +45,7 @@ class Property(db.Model):
             "units": [unit.to_dict() for unit in self.units]  # Include units in the response
         }
 
+
 class Unit(db.Model):
     __tablename__ = "units"
     unit_id = db.Column(db.Integer, primary_key=True)
@@ -59,12 +60,10 @@ class Unit(db.Model):
     is_available = db.Column(db.Boolean, default=True)
     description = db.Column(db.Text, nullable=True)
 
-    # Relationship with Property
-    property = db.relationship("Property", backref="units")
-    
+    # ❌ Removed duplicate relationship with Property
+
     # Relationship with Tenant (One-to-One)
     tenant = db.relationship("Tenant", back_populates="unit", uselist=False)
-
 
     def to_dict(self):
         return {
@@ -77,6 +76,8 @@ class Unit(db.Model):
             "description": self.description,
             "tenant": self.tenant.to_dict() if self.tenant else None
         }
+
+
 class Tenant(db.Model):
     __tablename__ = "tenants"
     tenant_id = db.Column(db.Integer, primary_key=True)

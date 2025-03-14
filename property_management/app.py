@@ -10,7 +10,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 migrate = Migrate(app, db)
-CORS(app)  # Enable CORS for all routes
+from flask_cors import CORS
+CORS(app) 
 
 # 🏠 Get all properties and add a new property
 @app.route('/properties', methods=['GET', 'POST'])
@@ -222,10 +223,6 @@ def remove_tenant(unit_id):
 def get_tenants():
     tenants = Tenant.query.all()
     return jsonify([tenant.to_dict() for tenant in tenants])
-@app.route('/get_units/<int:property_id>', methods=['GET'])
-def get_property_units(property_id):
-    units = Unit.query.filter_by(property_id=property_id).all()
-    return jsonify({"units": [unit.to_dict() for unit in units]})
 
 
 # 🏁 Run Flask app

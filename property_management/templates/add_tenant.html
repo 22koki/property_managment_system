@@ -52,48 +52,62 @@
 
     <script>
         $(document).ready(function() {
+            // Handle property selection change
             $("#property_id").change(function() {
                 var propertyId = $(this).val();
                 if (propertyId) {
                     $.ajax({
-                        url: "/get_units/" + propertyId,
+                        url: `/get_units/${propertyId}`,  // ✅ Corrected URL formatting
                         type: "GET",
                         success: function(data) {
                             $("#unit_id").empty().append('<option value="">-- Select Unit --</option>');
-                            data.units.forEach(unit => {
-                                $("#unit_id").append('<option value="' + unit.unit_id + '">' + unit.unit_no + '</option>');
-                            });
+                            if (data.units && data.units.length > 0) {
+                                data.units.forEach(unit => {
+                                    $("#unit_id").append(`<option value="${unit.unit_id}">${unit.unit_number}</option>`);
+                                });
+                            } else {
+                                $("#unit_id").append('<option value="">No units available</option>');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error("Error fetching units:", xhr.responseText);
+                            alert("Failed to load units. Please try again.");
                         }
                     });
                 } else {
                     $("#unit_id").empty().append('<option value="">-- Select Unit --</option>');
                 }
             });
-
+    
+            // Handle form submission
             $("#tenant-form").submit(function(event) {
                 event.preventDefault();
                 var formData = {
                     unit_id: $("#unit_id").val(),
                     name: $("#name").val(),
                     email: $("#email").val(),
-                    phone: $("#phone").val()
+                    phone: $("#phone").val(),
+                    csrf_token: $("input[name='csrf_token']").val()  // ✅ Ensure CSRF token is sent
                 };
-
+    
                 $.ajax({
-                    url: "/assign_tenant",
+                    url: "http://127.0.0.1:5000/assign_tenant",
                     type: "POST",
                     contentType: "application/json",
-                    data: JSON.stringify(formData),
+                    data: JSON.stringify(formData),  // ✅ Use formData instead of redefining fields
                     success: function(response) {
                         alert(response.message);
                         location.reload();
                     },
                     error: function(xhr) {
-                        alert(xhr.responseJSON.error);
+                        console.error("Error:", xhr.responseText);
+                        alert(xhr.responseJSON ? xhr.responseJSON.error : "An error occurred.");
                     }
                 });
-            });
-        });
+            });  // ✅ Close .submit() function properly
+        });  // ✅ Close .ready() function properly
     </script>
+    
+    
 </body>
 </html>
