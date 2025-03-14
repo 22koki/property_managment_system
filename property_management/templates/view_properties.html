@@ -7,15 +7,37 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
+        body {
+            background-color: #f8f9fa;
+        }
         .property {
             border: 2px solid #ddd;
+            border-radius: 10px;
             padding: 15px;
             margin: 10px 0;
             cursor: pointer;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        .property:hover {
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         }
         .property.selected {
             border-color: red;
             background-color: #ffe6e6;
+        }
+        .units-table {
+            width: 100%;
+            margin-top: 10px;
+        }
+        .units-table th, .units-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .units-table th {
+            background: #007bff;
+            color: white;
         }
     </style>
 </head>
@@ -24,7 +46,7 @@
         <h1 class="text-center">View Properties</h1>
         
         <div class="property-actions text-center mt-3">
-            <a href="add_propert.html" class="btn btn-primary" id="add-property-btn">Add Property</a>
+            <a href="add_propert.html" class="btn btn-primary">Add Property</a>
             <button id="update-property-btn" class="btn btn-warning" disabled>Update Property</button>
             <button id="delete-property-btn" class="btn btn-danger" disabled>Delete Selected Property</button>
         </div>
@@ -35,35 +57,16 @@
     </div>
 
     <script>
-        let selectedProperty = null; // Holds the selected property data
-
-// Function to enable/disable the Update button when a property is selected
-$(".property-item").click(function () {
-    $(".property-item").removeClass("selected"); // Remove previous selection
-    $(this).addClass("selected"); // Highlight selected property
-    selectedProperty = $(this); // Store selected property
-    $("#update-property-btn").prop("disabled", false); // Enable Update button
-    $("#delete-property-btn").prop("disabled", false); // Enable Delete button
-});
-
-// Redirect to update page
-$("#update-property-btn").click(function() {
-    if (selectedProperty) {
-        let propertyId = selectedProperty.data("id");
-        window.location.href = `add_propert.html?id=${propertyId}`; // Ensure this filename exists
-    }
-});
-
-        $(document).ready(function() {
+        $(document).ready(function () {
             let selectedProperty = null;
-
-            // Function to fetch properties from the database
+    
+            // Function to fetch properties and update the available units
             function fetchProperties() {
-                $.getJSON("http://127.0.0.1:5000/properties", function(data) {
+                $.getJSON("http://127.0.0.1:5000/properties", function (data) {
                     let propertyList = $(".property-list");
-                    propertyList.empty(); // Clear existing content
-
-                    data.forEach(function(property) {
+                    propertyList.empty(); // Clear old data
+    
+                    data.forEach(function (property) {
                         let propertyHtml = `
                             <div class="property" data-id="${property.property_id}">
                                 <h2>${property.name}</h2>
@@ -72,55 +75,161 @@ $("#update-property-btn").click(function() {
                                 <p><strong>Type:</strong> ${property.property_type}</p>
                                 <p><strong>Price:</strong> KES ${property.price.toLocaleString()}</p>
                                 <p><strong>Bedrooms:</strong> ${property.bedrooms}</p>
-                                <p><strong>Available Units:</strong> ${property.available_units}</p>
+                                <p><strong>Available Units:</strong> <span class="available-units" data-id="${property.property_id}">${property.available_units}</span></p>
                                 <p><strong>Size:</strong> ${property.size}</p>
                                 <p><strong>Description:</strong> ${property.description || "N/A"}</p>
+                                <button class="btn btn-info view-units-btn" data-id="${property.property_id}">View Units</button>
+                                <div class="units-list" id="units-${property.property_id}" style="display: none; margin-top: 10px;"></div>
                             </div>
                         `;
                         propertyList.append(propertyHtml);
                     });
                 });
             }
-
+    
             fetchProperties(); // Load properties when page loads
-
-            // Select property on click
-            $(document).on("click", ".property", function() {
-                $(".property").removeClass("selected");  // Remove highlight from others
-                $(this).addClass("selected");  // Highlight clicked one
-                selectedProperty = $(this);  // Store selected property
-                $("#delete-property-btn, #update-property-btn").prop("disabled", false);  // Enable buttons
+    
+            // ✅ Select a property when clicked
+            $(document).on("click", ".property", function () {
+                $(".property").removeClass("selected");
+                $(this).addClass("selected");
+                selectedProperty = $(this);
+                $("#delete-property-btn, #update-property-btn").prop("disabled", false);
             });
-
-            // Delete selected property
-            $("#delete-property-btn").click(function() {
+    
+            // ✅ Delete selected property
+            $("#delete-property-btn").click(function () {
                 if (selectedProperty) {
                     let propertyId = selectedProperty.data("id");
-
+    
                     $.ajax({
                         url: `http://127.0.0.1:5000/properties/${propertyId}`,
                         type: "DELETE",
-                        success: function(response) {
+                        success: function () {
                             alert("Property deleted successfully!");
                             fetchProperties(); // Refresh properties
                             $("#delete-property-btn, #update-property-btn").prop("disabled", true);
                             selectedProperty = null;
                         },
-                        error: function() {
+                        error: function () {
                             alert("Error deleting property.");
                         }
                     });
                 }
             });
-
-            // Redirect to update page
-            $("#update-property-btn").click(function() {
+    
+            // ✅ Redirect to update page
+            $("#update-property-btn").click(function () {
                 if (selectedProperty) {
                     let propertyId = selectedProperty.data("id");
-                    window.location.href = `add_propert.html?id=${propertyId}`;
+                    window.location.href = `add_property.html?id=${propertyId}`;
                 }
             });
+    
+            // ✅ View and manage units
+            $(document).on("click", ".view-units-btn", function () {
+                let propertyId = $(this).data("id");
+                let unitsList = $(`#units-${propertyId}`);
+    
+                if (unitsList.is(":visible")) {
+                    unitsList.slideUp(); // Hide if already shown
+                } else {
+                    $.getJSON(`http://127.0.0.1:5000/properties/${propertyId}/units`, function (units) {
+                        let unitsHtml = `
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Unit</th>
+                                        <th>Rent (KES)</th>
+                                        <th>Description</th>
+                                        <th>Available</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+                        if (units.length > 0) {
+                            units.forEach(unit => {
+                                unitsHtml += `
+                                    <tr data-unit-id="${unit.unit_id}">
+                                        <td>${unit.unit_number}</td>
+                                        <td>${unit.rent_price.toLocaleString()}</td>
+                                        <td>${unit.description}</td>
+                                        <td>${unit.is_available ? "Yes" : "No"}</td>
+                                        <td><button class="btn btn-danger delete-unit-btn" data-unit-id="${unit.unit_id}" data-property-id="${propertyId}">Delete</button></td>
+                                    </tr>
+                                `;
+                            });
+                        } else {
+                            unitsHtml += `<tr><td colspan="5">No units available.</td></tr>`;
+                        }
+                        unitsHtml += `</tbody></table>`;
+    
+                        unitsList.html(unitsHtml).slideDown();
+                    });
+                }
+            });
+    
+            // ✅ Delete Unit and Update Available Units Count
+            $(document).on("click", ".delete-unit-btn", function () {
+                let unitId = $(this).data("unit-id");
+                let propertyId = $(this).data("property-id");
+    
+                $.ajax({
+                    url: `http://127.0.0.1:5000/units/${unitId}`,
+                    type: "DELETE",
+                    success: function () {
+                        alert("Unit deleted successfully!");
+                        fetchProperties(); // Refresh property list to update available units count
+                        $(`.view-units-btn[data-id="${propertyId}"]`).click(); // Refresh units table
+                    },
+                    error: function () {
+                        alert("Error deleting unit.");
+                    }
+                });
+            });
+    
         });
+        async function updateAvailableUnits(propertyId) {
+    try {
+        let response = await fetch(`http://127.0.0.1:5000/properties/${propertyId}/available_units`);
+        let data = await response.json();
+
+        let unitsElement = document.querySelector(`.available-units[data-id="${propertyId}"]`);
+        if (unitsElement) {
+            unitsElement.textContent = data.available_units;
+        } else {
+            console.warn(`Element with data-id="${propertyId}" not found.`);
+        }
+    } catch (error) {
+        console.error("Error fetching available units:", error);
+    }
+}
+
+// Example Usage (Call this after adding/deleting a unit)
+updateAvailableUnits(1);
+
+// Automatically refresh available units when a unit is added or deleted
+function refreshUnitsOnChange(propertyId) {
+    if (propertyId) {
+        updateAvailableUnits(propertyId);
+    } else {
+        console.warn("Property ID is missing.");
+    }
+}
+
+// Attach refresh to unit add & delete events
+$(document).on("click", ".add-unit-btn, .delete-unit-btn", function () {
+    let propertyId = $(this).attr("data-property-id"); // Ensure it exists
+    if (propertyId) {
+        refreshUnitsOnChange(propertyId);
+    } else {
+        console.warn("Property ID not found in clicked button.");
+    }
+});
+
+ 
     </script>
+    
 </body>
 </html>

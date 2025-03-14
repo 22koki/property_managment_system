@@ -45,22 +45,52 @@ class Property(db.Model):
             "units": [unit.to_dict() for unit in self.units]  # Include units in the response
         }
 
-
 class Unit(db.Model):
-    __tablename__ = 'units'
+    __tablename__ = "units"
     unit_id = db.Column(db.Integer, primary_key=True)
-    property_id = db.Column(db.Integer, db.ForeignKey('properties.property_id'), nullable=False)
+    property_id = db.Column(
+        db.Integer, db.ForeignKey("properties.property_id", name="fk_unit_property"), nullable=False
+    )
+    tenant_id = db.Column(
+        db.Integer, db.ForeignKey("tenants.tenant_id", name="fk_unit_tenant"), nullable=True
+    )
     unit_number = db.Column(db.String(50), nullable=False)
     rent_price = db.Column(db.Float, nullable=False)
     is_available = db.Column(db.Boolean, default=True)
     description = db.Column(db.Text, nullable=True)
 
+    # Relationship with Property
+    property = db.relationship("Property", backref="units")
+    
+    # Relationship with Tenant (One-to-One)
+    tenant = db.relationship("Tenant", back_populates="unit", uselist=False)
+
+
     def to_dict(self):
         return {
             "unit_id": self.unit_id,
             "property_id": self.property_id,
+            "tenant_id": self.tenant_id,
             "unit_number": self.unit_number,
             "rent_price": self.rent_price,
             "is_available": self.is_available,
-            "description": self.description
+            "description": self.description,
+            "tenant": self.tenant.to_dict() if self.tenant else None
+        }
+class Tenant(db.Model):
+    __tablename__ = "tenants"
+    tenant_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    phone = db.Column(db.String(15), unique=True, nullable=False)
+
+    # Relationship with Unit (One-to-One)
+    unit = db.relationship('Unit', back_populates="tenant", uselist=False)
+
+    def to_dict(self):
+        return {
+            "tenant_id": self.tenant_id,
+            "name": self.name,
+            "email": self.email,
+            "phone": self.phone,
         }

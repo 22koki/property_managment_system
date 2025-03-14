@@ -5,40 +5,129 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Units Management</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   <!-- Link external CSS -->
 </head>
 <body>
+    <style>
+     body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 20px;
+}
 
-    <h2>Units in Property</h2>
+.container {
+    width: 50%;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
 
-    <!-- Property selection -->
-    <label for="property-select">Select Property:</label>
-    <select id="property-select">
-        <option value="">-- Select Property --</option>
-    </select>
+h2, h3 {
+    text-align: center;
+    color: #333;
+}
 
-    <h3>Add / Update Unit</h3>
-    <form id="unit-form">
-        <input type="hidden" id="unit-id">
-        <label>Unit Number:</label>
-        <input type="text" id="unit-number" required>
-        
-        <label>Rent Price:</label>
-        <input type="number" id="rent-price" required>
+.form-group {
+    margin-bottom: 10px;
+}
 
-        <label>Availability:</label>
-        <select id="is-available">
-            <option value="true">Available</option>
-            <option value="false">Not Available</option>
-        </select>
+input, select, textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+}
 
-        <label>Description:</label>
-        <input type="text" id="description">
+.btn {
+    background: #007bff;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+}
 
-        <button type="submit">Save Unit</button>
-    </form>
+.unit-card {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background: #fff;
+}
 
-    <h3>Existing Units</h3>
-    <div id="units-list"></div>
+.unit-header {
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 10px;
+    background: #007bff;
+    color: white;
+    border-radius: 5px;
+}
+
+.unit-details {
+    display: none;
+    padding: 10px;
+    background: #f8f8f8;
+}
+
+.edit-btn {
+    background: #28a745;
+}
+
+.delete-btn {
+    background: #dc3545;
+}
+    
+    </style>
+
+    <div class="container">
+        <h2>Units Management</h2>
+
+        <!-- Property selection -->
+        <div class="form-group">
+            <label for="property-select">Select Property:</label>
+            <select id="property-select">
+                <option value="">-- Select Property --</option>
+            </select>
+        </div>
+
+        <h3>Add / Update Unit</h3>
+        <form id="unit-form">
+            <input type="hidden" id="unit-id">
+            
+            <div class="form-group">
+                <label>Unit Number:</label>
+                <input type="text" id="unit-number" required>
+            </div>
+
+            <div class="form-group">
+                <label>Rent Price:</label>
+                <input type="number" id="rent-price" required>
+            </div>
+
+            <div class="form-group">
+                <label>Availability:</label>
+                <select id="is-available">
+                    <option value="true">Available</option>
+                    <option value="false">Not Available</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Description:</label>
+                <textarea id="description"></textarea>
+            </div>
+
+            <button type="submit" class="btn">Save Unit</button>
+        </form>
+
+        <h3>Existing Units</h3>
+        <div id="units-list"></div>
+    </div>
 
     <script>
         $(document).ready(function () {
@@ -69,14 +158,18 @@
                         } else {
                             data.forEach(unit => {
                                 unitsHtml += `
-                                    <div>
-                                        <h3>Unit ${unit.unit_number}</h3>
-                                        <p>Rent: Ksh ${unit.rent_price}</p>
-                                        <p>Status: ${unit.is_available ? "Available" : "Not Available"}</p>
-                                        <p>Description: ${unit.description || "No description"}</p>
-                                        <button onclick="editUnit(${unit.unit_id}, '${unit.unit_number}', ${unit.rent_price}, ${unit.is_available}, '${unit.description}')">Edit</button>
-                                        <button onclick="deleteUnit(${unit.unit_id})">Delete</button>
-                                        <hr>
+                                    <div class="unit-card">
+                                        <div class="unit-header" onclick="toggleUnitDetails(${unit.unit_id})">
+                                            <span>Unit ${unit.unit_number}</span>
+                                            <span class="arrow">▼</span>
+                                        </div>
+                                        <div class="unit-details" id="unit-${unit.unit_id}">
+                                            <p><strong>Rent:</strong> Ksh ${unit.rent_price}</p>
+                                            <p><strong>Status:</strong> ${unit.is_available ? "Available" : "Not Available"}</p>
+                                            <p><strong>Description:</strong> ${unit.description || "No description"}</p>
+                                            <button class="btn edit-btn" onclick="editUnit(${unit.unit_id}, '${unit.unit_number}', ${unit.rent_price}, ${unit.is_available}, '${unit.description}')">Edit</button>
+                                            <button class="btn delete-btn" onclick="deleteUnit(${unit.unit_id})">Delete</button>
+                                        </div>
                                     </div>
                                 `;
                             });
@@ -89,62 +182,42 @@
             }
 
             $("#unit-form").submit(function (event) {
-    event.preventDefault();  // Prevent form default submission
+                event.preventDefault();
+                let propertyId = $("#property-select").val();
+                if (!propertyId) {
+                    alert("Please select a property first.");
+                    return;
+                }
 
-    let propertyId = $("#property-select").val();
-    if (!propertyId) {
-        alert("Please select a property first.");
-        return;
-    }
+                let unitData = {
+                    property_id: propertyId,
+                    unit_number: $("#unit-number").val(),
+                    rent_price: parseFloat($("#rent-price").val()),
+                    is_available: $("#is-available").val() === "true",
+                    description: $("#description").val().trim()
+                };
 
-    // ✅ Make sure unitData is defined here before using it
-    let unitData = {
-        property_id: propertyId,
-        unit_number: $("#unit-number").val(),
-        rent_price: parseFloat($("#rent-price").val()), // Ensure number
-        is_available: $("#is-available").val() === "true",
-        description: $("#description").val().trim() // Remove extra spaces
-    };
+                let unitId = $("#unit-id").val();
+                let url = unitId ? `http://127.0.0.1:5000/units/${unitId}` : "http://127.0.0.1:5000/units";
+                let method = unitId ? "PUT" : "POST";
 
-    let unitId = $("#unit-id").val();
-    if (unitId) {
-        // Update existing unit
-        $.ajax({
-            url: `http://127.0.0.1:5000/units/${unitId}`,
-            type: "PUT",
-            contentType: "application/json",
-            data: JSON.stringify(unitData),
-            success: function () {
-                alert("Unit updated successfully");
-                $("#unit-form")[0].reset();
-                $("#unit-id").val("");
-                loadUnits(propertyId);
-            },
-            error: function (xhr) {
-                alert("Error updating unit: " + xhr.responseText);
-            }
-        });
-    } else {
-        // Add new unit
-        $.ajax({
-            url: "http://127.0.0.1:5000/units",
-            type: "POST",
-            contentType: "application/json",
-            data: JSON.stringify(unitData), // ✅ Ensure JSON format
-            success: function () {
-                alert("Unit added successfully");
-                $("#unit-form")[0].reset();
-                loadUnits(propertyId);
-            },
-            error: function (xhr) {
-                alert("Error adding unit: " + xhr.responseText);
-            }
-        });
-    }
-});
+                $.ajax({
+                    url: url,
+                    type: method,
+                    contentType: "application/json",
+                    data: JSON.stringify(unitData),
+                    success: function () {
+                        alert(unitId ? "Unit updated successfully" : "Unit added successfully");
+                        $("#unit-form")[0].reset();
+                        $("#unit-id").val("");
+                        loadUnits(propertyId);
+                    },
+                    error: function (xhr) {
+                        alert("Error: " + xhr.responseText);
+                    }
+                });
+            });
 
-
-            // Edit unit function
             window.editUnit = function (id, number, price, available, description) {
                 $("#unit-id").val(id);
                 $("#unit-number").val(number);
@@ -153,7 +226,6 @@
                 $("#description").val(description);
             };
 
-            // Delete unit function
             window.deleteUnit = function (unitId) {
                 if (confirm("Are you sure you want to delete this unit?")) {
                     $.ajax({
@@ -166,6 +238,10 @@
                         }
                     });
                 }
+            };
+
+            window.toggleUnitDetails = function (unitId) {
+                $(`#unit-${unitId}`).slideToggle();
             };
         });
     </script>
