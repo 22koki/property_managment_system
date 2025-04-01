@@ -57,178 +57,162 @@
     </div>
 
     <script>
-        $(document).ready(function () {
-            let selectedProperty = null;
-    
-            // Function to fetch properties and update the available units
-            function fetchProperties() {
-                $.getJSON("http://127.0.0.1:5000/properties", function (data) {
-                    let propertyList = $(".property-list");
-                    propertyList.empty(); // Clear old data
-    
-                    data.forEach(function (property) {
-                        let propertyHtml = `
-                            <div class="property" data-id="${property.property_id}">
-                                <h2>${property.name}</h2>
-                                <p><strong>Owner:</strong> ${property.owner}</p>
-                                <p><strong>Location:</strong> ${property.location}</p>
-                                <p><strong>Type:</strong> ${property.property_type}</p>
-                                <p><strong>Price:</strong> KES ${property.price.toLocaleString()}</p>
-                                <p><strong>Bedrooms:</strong> ${property.bedrooms}</p>
-                                <p><strong>Available Units:</strong> <span class="available-units" data-id="${property.property_id}">${property.available_units}</span></p>
-                                <p><strong>Size:</strong> ${property.size}</p>
-                                <p><strong>Description:</strong> ${property.description || "N/A"}</p>
-                                <button class="btn btn-info view-units-btn" data-id="${property.property_id}">View Units</button>
-                                <div class="units-list" id="units-${property.property_id}" style="display: none; margin-top: 10px;"></div>
-                            </div>
-                        `;
-                        propertyList.append(propertyHtml);
-                    });
-                });
+       $(document).ready(function () {
+    let selectedProperty = null;
+
+    // Function to fetch properties and update the available units
+    function fetchProperties() {
+        $.getJSON("http://127.0.0.1:5000/properties", function (data) {
+            console.log("Fetched properties data:", data);  // Log the data to debug
+            let propertyList = $(".property-list");
+            propertyList.empty(); // Clear old data
+
+            // Check if data is not empty
+            if (data.length === 0) {
+                propertyList.append("<p>No properties found.</p>");
             }
-    
-            fetchProperties(); // Load properties when page loads
-    
-            // ✅ Select a property when clicked
-            $(document).on("click", ".property", function () {
-                $(".property").removeClass("selected");
-                $(this).addClass("selected");
-                selectedProperty = $(this);
-                $("#delete-property-btn, #update-property-btn").prop("disabled", false);
+
+            data.forEach(function (property) {
+                let priceFormatted = property.price ? property.price.toLocaleString() : "N/A";  // Ensure valid number
+                let availableUnits = property.available_units !== undefined ? property.available_units : "Unknown";
+                let bedrooms = property.bedrooms !== undefined ? property.bedrooms : "N/A";
+                let size = property.size !== undefined ? property.size : "N/A";
+
+                let propertyHtml = `
+                    <div class="property" data-id="${property.property_id}">
+                        <h2>${property.name}</h2>
+                        <p><strong>Owner:</strong> ${property.owner}</p>
+                        <p><strong>Location:</strong> ${property.location}</p>
+                        <p><strong>Type:</strong> ${property.property_type}</p>
+                        <p><strong>Price:</strong> KES ${priceFormatted}</p>
+                        <p><strong>Available Units:</strong> ${availableUnits}</p>
+                        
+                        <p><strong>Description:</strong> ${property.description || "N/A"}</p>
+                        <button class="btn btn-info view-units-btn" data-id="${property.property_id}">View Units</button>
+                        <div class="units-list" id="units-${property.property_id}" style="display: none; margin-top: 10px;"></div>
+                    </div>
+                `;
+                propertyList.append(propertyHtml);
             });
-    
-            // ✅ Delete selected property
-            $("#delete-property-btn").click(function () {
-                if (selectedProperty) {
-                    let propertyId = selectedProperty.data("id");
-    
-                    $.ajax({
-                        url: `http://127.0.0.1:5000/properties/${propertyId}`,
-                        type: "DELETE",
-                        success: function () {
-                            alert("Property deleted successfully!");
-                            fetchProperties(); // Refresh properties
-                            $("#delete-property-btn, #update-property-btn").prop("disabled", true);
-                            selectedProperty = null;
-                        },
-                        error: function () {
-                            alert("Error deleting property.");
-                        }
-                    });
-                }
-            });
-    
-            // ✅ Redirect to update page
-            $("#update-property-btn").click(function () {
-                if (selectedProperty) {
-                    let propertyId = selectedProperty.data("id");
-                    window.location.href = `add_property.html?id=${propertyId}`;
-                }
-            });
-    
-            // ✅ View and manage units
-            $(document).on("click", ".view-units-btn", function () {
-                let propertyId = $(this).data("id");
-                let unitsList = $(`#units-${propertyId}`);
-    
-                if (unitsList.is(":visible")) {
-                    unitsList.slideUp(); // Hide if already shown
-                } else {
-                    $.getJSON(`http://127.0.0.1:5000/properties/${propertyId}/units`, function (units) {
-                        let unitsHtml = `
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Unit</th>
-                                        <th>Rent (KES)</th>
-                                        <th>Description</th>
-                                        <th>Available</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                        `;
-                        if (units.length > 0) {
-                            units.forEach(unit => {
-                                unitsHtml += `
-                                    <tr data-unit-id="${unit.unit_id}">
-                                        <td>${unit.unit_number}</td>
-                                        <td>${unit.rent_price.toLocaleString()}</td>
-                                        <td>${unit.description}</td>
-                                        <td>${unit.is_available ? "Yes" : "No"}</td>
-                                        <td><button class="btn btn-danger delete-unit-btn" data-unit-id="${unit.unit_id}" data-property-id="${propertyId}">Delete</button></td>
-                                    </tr>
-                                `;
-                            });
-                        } else {
-                            unitsHtml += `<tr><td colspan="5">No units available.</td></tr>`;
-                        }
-                        unitsHtml += `</tbody></table>`;
-    
-                        unitsList.html(unitsHtml).slideDown();
-                    });
-                }
-            });
-    
-            // ✅ Delete Unit and Update Available Units Count
-            $(document).on("click", ".delete-unit-btn", function () {
-                let unitId = $(this).data("unit-id");
-                let propertyId = $(this).data("property-id");
-    
-                $.ajax({
-                    url: `http://127.0.0.1:5000/units/${unitId}`,
-                    type: "DELETE",
-                    success: function () {
-                        alert("Unit deleted successfully!");
-                        fetchProperties(); // Refresh property list to update available units count
-                        $(`.view-units-btn[data-id="${propertyId}"]`).click(); // Refresh units table
-                    },
-                    error: function () {
-                        alert("Error deleting unit.");
-                    }
-                });
-            });
-    
+        }).fail(function () {
+            console.error("Error fetching properties.");
+            alert("Error fetching properties. Please check your API and network.");
         });
-        async function updateAvailableUnits(propertyId) {
-    try {
-        let response = await fetch(`http://127.0.0.1:5000/properties/${propertyId}/available_units`);
-        let data = await response.json();
+    }
 
-        let unitsElement = document.querySelector(`.available-units[data-id="${propertyId}"]`);
-        if (unitsElement) {
-            unitsElement.textContent = data.available_units;
-        } else {
-            console.warn(`Element with data-id="${propertyId}" not found.`);
+    // Fetch properties on page load
+    fetchProperties();
+
+    // ✅ Select a property when clicked
+    $(document).on("click", ".property", function () {
+        $(".property").removeClass("selected");
+        $(this).addClass("selected");
+        selectedProperty = $(this);
+        $("#delete-property-btn, #update-property-btn").prop("disabled", false);
+    });
+
+    // ✅ Delete selected property
+    $("#delete-property-btn").click(function () {
+        if (selectedProperty) {
+            let propertyId = selectedProperty.data("id");
+
+            $.ajax({
+                url: `http://127.0.0.1:5000/properties/${propertyId}`,
+                type: "DELETE",
+                success: function () {
+                    alert("Property deleted successfully!");
+                    fetchProperties(); // Refresh property list
+                    $("#delete-property-btn, #update-property-btn").prop("disabled", true);
+                    selectedProperty = null;
+                },
+                error: function () {
+                    alert("Error deleting property.");
+                }
+            });
         }
-    } catch (error) {
-        console.error("Error fetching available units:", error);
-    }
-}
+    });
 
-// Example Usage (Call this after adding/deleting a unit)
-updateAvailableUnits(1);
+    // ✅ Redirect to update page
+    $("#update-property-btn").click(function () {
+        if (selectedProperty) {
+            let propertyId = selectedProperty.data("id");
+            window.location.href = `add_propert.html?id=${propertyId}`;
+        }
+    });
 
-// Automatically refresh available units when a unit is added or deleted
-function refreshUnitsOnChange(propertyId) {
-    if (propertyId) {
-        updateAvailableUnits(propertyId);
+    // ✅ View and manage units
+$(document).on("click", ".view-units-btn", function () {
+    let propertyId = $(this).data("id");
+    let unitsList = $(`#units-${propertyId}`);
+
+    if (unitsList.is(":visible")) {
+        unitsList.slideUp(); // Hide if already shown
     } else {
-        console.warn("Property ID is missing.");
-    }
-}
+        $.getJSON(`http://127.0.0.1:5000/properties/${propertyId}/available_units`, function (units) {
+            let unitsHtml = `
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Unit</th>
+                            <th>Rent (KES)</th>
+                            <th>Description</th>
+                            <th>Available</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            if (units.length > 0) {
+                units.forEach(unit => {
+                    unitsHtml += `
+                        <tr data-unit-id="${unit.unit_id}">
+                            <td>${unit.unit_no}</td>  <!-- Updated key -->
+                            <td>${unit.rent_price.toLocaleString()}</td>
+                            <td>${unit.description || "N/A"}</td>
+                            <td>${unit.available ? "Yes" : "No"}</td>
+                            <td>
+                                <button class="btn btn-danger delete-unit-btn" 
+                                    data-unit-id="${unit.unit_id}" 
+                                    data-property-id="${propertyId}">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                unitsHtml += `<tr><td colspan="5">No units available.</td></tr>`;
+            }
+            unitsHtml += `</tbody></table>`;
 
-// Attach refresh to unit add & delete events
-$(document).on("click", ".add-unit-btn, .delete-unit-btn", function () {
-    let propertyId = $(this).attr("data-property-id"); // Ensure it exists
-    if (propertyId) {
-        refreshUnitsOnChange(propertyId);
-    } else {
-        console.warn("Property ID not found in clicked button.");
+            unitsList.html(unitsHtml).slideDown();
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            console.error("Error fetching units:", textStatus, errorThrown);
+            unitsList.html(`<p class="text-danger">Failed to load units.</p>`).slideDown();
+        });
     }
 });
 
- 
+
+    // ✅ Delete Unit and Update Available Units Count
+    $(document).on("click", ".delete-unit-btn", function () {
+        let unitId = $(this).data("unit-id");
+        let propertyId = $(this).data("property-id");
+
+        $.ajax({
+            url: `http://127.0.0.1:5000/units/${unitId}`,
+            type: "DELETE",
+            success: function () {
+                alert("Unit deleted successfully!");
+                fetchProperties(); // Refresh property list to update available units count
+                $(`.view-units-btn[data-id="${propertyId}"]`).click(); // Refresh units table
+            },
+            error: function () {
+                alert("Error deleting unit.");
+            }
+        });
+    });
+});
     </script>
     
 </body>

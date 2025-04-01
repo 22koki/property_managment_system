@@ -1,233 +1,230 @@
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, jsonify, make_response, render_template, request, redirect, url_for, flash
 from flask_migrate import Migrate
-from flask_cors import CORS
-from models import db, Property, Unit ,Tenant # Import models
+from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS  # Import CO
+from flask_cors import cross_origin
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from models import db, Property, Unit, Tenant, Invoice, MaintenanceRequest, Receipt, Admin
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///property_mgmt.db'
+CORS(app, resources={r"/*": {"origins": "*"}})  # Allow requests from any origin
+  # Enable CORS for all routes
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db.init_app(app)
-migrate = Migrate(app, db)
-from flask_cors import CORS
-CORS(app) 
+db.init_app(app)  # ✅ Keep only one instance of db.init_app(app)
+migrate = Migrate(app, db)  # ✅ Move this after db.init_app(app)
 
-# 🏠 Get all properties and add a new property
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Admin.query.get(int(user_id))
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        admin = Admin.query.filter_by(username=username).first()
+        if admin and admin.password == password:
+            login_user(admin)
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid credentials', 'danger')
+    return render_template('login.html')
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    properties = Property.query.all()
+    tenants = Tenant.query.all()
+    invoices = Invoice.query.all()
+    return render_template('dashboard.html', properties=properties, tenants=tenants, invoices=invoices)
+
+@app.route('/generate_invoice/<int:tenant_id>')
+@login_required
+def generate_invoice(tenant_id):
+    tenant = Tenant.query.get(tenant_id)
+    unit = tenant.unit
+    if not unit:
+        flash('No unit assigned to this tenant', 'danger')
+        return redirect(url_for('dashboard'))
+
+    water_bill = request.args.get('water_bill', 0, type=float)
+    total_amount = unit.rent_price + tenant.property.security_fee + tenant.property.garbage_fee + water_bill
+
+    invoice = Invoice(tenant_id=tenant.id, rent=unit.rent_price, security_fee=tenant.property.security_fee,
+                      garbage_fee=tenant.property.garbage_fee, water_bill=water_bill, total_amount=total_amount)
+    db.session.add(invoice)
+    db.session.commit()
+    flash('Invoice generated successfully', 'success')
+    return redirect(url_for('dashboard'))
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+@app.route('/invoice_pdf/<int:invoice_id>')
+@login_required
+def invoice_pdf(invoice_id):
+    invoice = Invoice.query.get_or_404(invoice_id)
+    rendered_html = render_template('invoice_pdf.html', invoice=invoice)
+    pdf = HTML(string=rendered_html).write_pdf()
+    
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'inline; filename=invoice_{invoice.id}.pdf'
+    return response
+
+# ➤ Add a new property
 @app.route('/properties', methods=['GET', 'POST'])
-def manage_properties():
+def properties():
     if request.method == 'POST':
         data = request.get_json()
-
-        # Ensure required fields are present
-        if not all(field in data for field in ["name", "owner", "location"]):
-            return jsonify({"error": "Missing required fields"}), 400
-
-        # Create a new property
         new_property = Property(
-            name=data["name"],
-            owner=data["owner"],
-            location=data["location"],
-            property_type=data.get("property_type", "Unknown"),
-            price=data.get("price", 0),
-            bedrooms=data.get("bedrooms", 0),
-            available_units=data.get("available_units", 0),
-            size=data.get("size", "N/A"),
-            description=data.get("description", "")
+            name=data['name'],
+            owner=data['owner'],
+            location=data['location'],
+            property_type=data['property_type'],
+            price=data['price'],
+            description=data.get('description', ''),
+            security_fee=data.get('security_fee', 500),
+            garbage_fee=data.get('garbage_fee', 200),
+            bedrooms=data.get('bedrooms', 0),  # Ensure bedrooms exist
+            size=data.get('size', "N/A")  # Ensure size exists
         )
-
-        # Add to database
         db.session.add(new_property)
         db.session.commit()
+        return jsonify({'message': 'Property added successfully'}), 201
 
-        return jsonify({"message": "Property added successfully!", "property": new_property.to_dict()}), 201
+    elif request.method == 'GET':
+        properties = Property.query.all()
+        return jsonify([
+            {
+                'property_id': prop.id,
+                'name': prop.name,
+                'owner': prop.owner,
+                'location': prop.location,
+                'property_type': prop.property_type,
+                'price': prop.price,
+                'description': prop.description,
+                'available_units': Unit.query.filter_by(property_id=prop.id, available=True).count()
+            }
+            for prop in properties
+        ])
 
-    # Handle GET request (return properties)
-    properties = Property.query.all()
-    return jsonify([prop.to_dict() for prop in properties])
-
-
-# 📍 Get a specific property
-@app.route('/properties/<int:property_id>', methods=['GET'])
-def get_property(property_id):
-    prop = Property.query.get(property_id)
-    if not prop:
-        return jsonify({"error": "Property not found"}), 404
-    return jsonify(prop.to_dict())
-@app.route('/properties/available', methods=['GET'])
-def get_available_properties():
-    properties = Property.query.all()
-    data = [
-        {
-            "property_id": prop.property_id,
-            "name": prop.name,
-            "location": prop.location,
-            "available_units": [
-                unit.to_dict() for unit in prop.units if unit.is_available
-            ]
-        }
-        for prop in properties if any(unit.is_available for unit in prop.units)
-    ]
-    return jsonify(data)
-
-
-# ✏️ Update a property
+# ➤ Update an existing property
 @app.route('/properties/<int:property_id>', methods=['PUT'])
 def update_property(property_id):
-    prop = Property.query.get(property_id)
-    if not prop:
-        return jsonify({"error": "Property not found"}), 404
-
-    data = request.json
-    for key, value in data.items():
-        setattr(prop, key, value)
-
-    db.session.commit()
-    return jsonify({"message": "Property updated successfully!"})
-
-# 🚀 Get available units for a property (FIXED)
-@app.route('/properties/<int:property_id>/available_units', methods=['GET'])
-def get_available_units(property_id):
-    property_ = Property.query.get(property_id)
-    if not property_:
-        return jsonify({"error": "Property not found"}), 404
-
-    return jsonify({"available_units": property_.available_units})
-
-
-# 🏘️ Get units for a property
-@app.route('/properties/<int:property_id>/units', methods=['GET'])
-def get_units(property_id):
-    property_exists = Property.query.get(property_id)
-    if not property_exists:
-        return jsonify({"error": "Invalid property ID"}), 404
-    
-    units = Unit.query.filter_by(property_id=property_id).all()
-    return jsonify([unit.to_dict() for unit in units])
-
-# ➕ Add a new unit
-@app.route('/units', methods=['POST'])
-def add_unit():
-    if not request.is_json:  # ✅ Check if request contains JSON data
-        return jsonify({"error": "Invalid content type. Use application/json"}), 415  
-
-    data = request.get_json()  # ✅ Correct way to parse JSON data
-
-    # Example validation
-    required_fields = ["property_id", "unit_number", "rent_price", "is_available"]
-    if not all(field in data for field in required_fields):
-        return jsonify({"error": "Missing required fields"}), 400  
-
-    # Add new unit
-    new_unit = Unit(
-        property_id=data['property_id'],
-        unit_number=data['unit_number'],
-        rent_price=data['rent_price'],
-        is_available=data['is_available'],
-        description=data.get('description', "")
-    )
-
-    db.session.add(new_unit)
-    db.session.commit()
-
-    # 🔄 Update available_units in Property
-    property_ = Property.query.get(data['property_id'])
-    if property_:
-        property_.available_units += 1
-        db.session.commit()
-
-    return jsonify({"message": "Unit added successfully", "unit": new_unit.to_dict()}), 201
-
-# ✏️ Update a unit
-@app.route('/units/<int:unit_id>', methods=['PUT'])
-def update_unit(unit_id):
-    unit = Unit.query.get(unit_id)
-    if not unit:
-        return jsonify({"error": "Unit not found"}), 404
-
-    data = request.json
-    for key, value in data.items():
-        setattr(unit, key, value)
-
-    db.session.commit()
-    return jsonify({"message": "Unit updated successfully", "unit": unit.to_dict()})
-
-# ❌ Delete a unit
-@app.route('/units/<int:unit_id>', methods=['DELETE'])
-def delete_unit(unit_id):
-    unit = Unit.query.get(unit_id)
-    if not unit:
-        return jsonify({"error": "Unit not found"}), 404
-
-    property_id = unit.property_id  # Store property ID before deleting unit
-
-    db.session.delete(unit)
-    db.session.commit()
-
-    # 🔄 Update available_units in Property
-    property_ = Property.query.get(property_id)
-    if property_:
-        property_.available_units -= 1 if property_.available_units > 0 else 0
-        db.session.commit()
-
-    return jsonify({"message": "Unit deleted successfully"})
-
-@app.route('/assign_tenant', methods=['POST'])
-def assign_tenant():
+    property = Property.query.get_or_404(property_id)
     data = request.get_json()
 
-    # Validate input
-    required_fields = ["unit_id", "name", "email", "phone"]
-    if not all(field in data for field in required_fields):
-        return jsonify({"error": "Missing required fields"}), 400
+    property.name = data['name']
+    property.owner = data['owner']
+    property.location = data['location']
+    property.property_type = data['property_type']
+    property.price = data['price']
+    property.description = data.get('description', '')
+    property.security_fee = data.get('security_fee', 500)
+    property.garbage_fee = data.get('garbage_fee', 200)
 
-    unit = Unit.query.get(data["unit_id"])
-    if not unit:
-        return jsonify({"error": "Unit not found"}), 404
-
-    if not unit.is_available:
-        return jsonify({"error": "Unit is already occupied"}), 400
-
-    # Create new tenant
-    new_tenant = Tenant(
-        name=data["name"],
-        email=data["email"],
-        phone=data["phone"]
-    )
-    db.session.add(new_tenant)
     db.session.commit()
+    return jsonify({'message': 'Property updated successfully'})
+@app.route('/units', methods=['POST'])
+def add_unit():
+    try:
+        data = request.get_json()
+        print("Received Data:", data)  # Debugging output
 
-    # Assign tenant to unit
-    unit.tenant_id = new_tenant.tenant_id
-    unit.is_available = False
-    db.session.commit()
+        if not data or 'unit_no' not in data:
+            return jsonify({"error": "Missing unit_no"}), 400
 
-    return jsonify({"message": "Tenant assigned successfully!", "tenant": new_tenant.to_dict()})
-@app.route('/remove_tenant/<int:unit_id>', methods=['DELETE'])
-def remove_tenant(unit_id):
-    unit = Unit.query.get(unit_id)
-    if not unit or not unit.tenant_id:
-        return jsonify({"error": "No tenant assigned to this unit"}), 404
+        if 'property_id' not in data:
+            return jsonify({"error": "Missing property_id"}), 400
 
-    # Remove tenant
-    tenant = Tenant.query.get(unit.tenant_id)
-    db.session.delete(tenant)
+        # Convert rent_price to float and remove commas
+        rent_price = float(str(data.get('rent_price', 0)).replace(',', ''))
+
+        # Correct field names to match your database model
+        unit = Unit(
+            unit_no=data['unit_no'],  # ✅ Use unit_no instead of unit_number
+            rent_price=rent_price,
+            description=data.get('description', ''),
+            available=bool(data.get('available', True)),
+            property_id=data['property_id']
+        )
+
+        db.session.add(unit)
+        db.session.commit()
+
+        return jsonify({'message': 'Unit added successfully'}), 201
+
+    except Exception as e:
+        print("Error:", str(e))  # Debugging
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/properties/<int:property_id>/available_units', methods=['GET'])
+@cross_origin()
+def get_available_units(property_id):
+    units = Unit.query.filter(Unit.property_id == property_id, Unit.available == True).all()
     
-    # Make unit available
-    unit.tenant_id = None
-    unit.is_available = True
+    return jsonify([
+        {
+            'unit_id': unit.id,
+            'unit_no': unit.unit_no,
+            'rent_price': unit.rent_price,
+            'description': unit.description or "N/A"
+        }
+        for unit in units
+    ])
+@app.route('/units/<int:id>', methods=['PUT'])
+def update_unit(id):
+    unit_to_update = Unit.query.get(id)  # Fetch from the database
+    
+    if not unit_to_update:
+        return jsonify({"message": "Unit not found"}), 404
+
+    # Get data from the request body
+    data = request.get_json()
+
+    # Update the unit fields
+    unit_to_update.unit_no = data.get('unit_no', unit_to_update.unit_no)
+    unit_to_update.rent_price = data.get('rent_price', unit_to_update.rent_price)
+    unit_to_update.available = data.get('available', unit_to_update.available)
+    unit_to_update.description = data.get('description', unit_to_update.description)
+
     db.session.commit()
 
-    return jsonify({"message": "Tenant removed, unit is now available!"})
-@app.route('/tenants', methods=['GET'])
-def get_tenants():
-    tenants = Tenant.query.all()
-    return jsonify([tenant.to_dict() for tenant in tenants])
+    return jsonify({"message": "Unit updated successfully", "unit": {
+        "unit_id": unit_to_update.id,
+        "unit_no": unit_to_update.unit_no,
+        "rent_price": unit_to_update.rent_price,
+        "available": unit_to_update.available,
+        "description": unit_to_update.description
+    }}), 200
 
 
-# 🏁 Run Flask app
-if __name__ == "__main__":
+
+
+@app.route('/units/<int:unit_id>', methods=['DELETE'])
+@cross_origin()
+def delete_unit(unit_id):
+    unit = Unit.query.get_or_404(unit_id)
+    db.session.delete(unit)
+    db.session.commit()
+    return jsonify({'message': 'Unit deleted successfully'}), 200
+
+
+if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        print("✅ Tables created successfully!")
     app.run(debug=True)
