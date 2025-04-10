@@ -4,38 +4,99 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Tenant | ZURIPO Properties</title>
-   
+
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            text-align: center;
+        }
+
+        .logo img {
+            width: 80px;
+            margin-bottom: 10px;
+        }
+
+        .form-container h1 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .form-container p {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 20px;
+        }
+
+        .form-container input, .form-container select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-container input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .form-container input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo">
-                <img src="/property_management/static/uploads/t.png" alt="ZURIPO Logo">
-            </div>
-            <h1>ZURIPO Property Specialists</h1>
-            <p>Location: Garden Estate, Off Northern Bypass, Nairobi</p>
-            <p>Phone: +254 792 262 000 | Email: info@zuripoproperties.co.ke</p>
-            <h2>We Manage, We Rent, We Sell</h2>
-        </header>
-        
-        <h2>Add New Tenant</h2>
+
+    <div class="form-container">
+        <div class="logo">
+            <img src="/property_management/static/uploads/t.png" alt="ZURIPO Logo">
+        </div>
+        <h1>Add New Tenant</h1>
+        <p>Fill in the details to assign a tenant to a unit.</p>
+
         <form id="tenant-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
             <label for="property_id">Select Property:</label>
             <select id="property_id" name="property_id" required>
                 <option value="">-- Select Property --</option>
-                {% for property in properties %}
-                    <option value="{{ property.property_id }}">{{ property.name }} - {{ property.location }}</option>
-                {% endfor %}
             </select>
 
             <label for="unit_id">Select Unit:</label>
-            <select id="unit_id" name="unit_id" required>
+            <select id="unit_id" name="unit_no" required>
                 <option value="">-- Select Unit --</option>
             </select>
+            
 
             <label for="name">Tenant Name:</label>
             <input type="text" id="name" name="name" required>
@@ -44,70 +105,101 @@
             <input type="email" id="email" name="email" required>
 
             <label for="phone">Phone Number:</label>
-            <input type="text" id="phone" name="phone" required>
+            <input type="text" id="phone" name="phone_no" required>
 
             <input type="submit" value="Assign Tenant">
+            <p class="error" id="error-message"></p>
         </form>
     </div>
 
     <script>
         $(document).ready(function() {
-            // Handle property selection change
-            $("#property_id").change(function() {
-                var propertyId = $(this).val();
-                if (propertyId) {
-                    $.ajax({
-                        url: `/get_units/${propertyId}`,  // ✅ Corrected URL formatting
-                        type: "GET",
-                        success: function(data) {
-                            $("#unit_id").empty().append('<option value="">-- Select Unit --</option>');
-                            if (data.units && data.units.length > 0) {
-                                data.units.forEach(unit => {
-                                    $("#unit_id").append(`<option value="${unit.unit_id}">${unit.unit_number}</option>`);
-                                });
-                            } else {
-                                $("#unit_id").append('<option value="">No units available</option>');
-                            }
-                        },
-                        error: function(xhr) {
-                            console.error("Error fetching units:", xhr.responseText);
-                            alert("Failed to load units. Please try again.");
-                        }
-                    });
+            const BASE_URL = "http://127.0.0.1:5000"; // Adjust based on your backend URL
+        
+            // Load properties dynamically
+            $.getJSON(`${BASE_URL}/properties`, function(data) {
+                let propertyDropdown = $("#property_id");
+                propertyDropdown.html('<option value="">-- Select Property --</option>');
+        
+                if (data.length === 0) {
+                    propertyDropdown.append('<option value="">No properties available</option>');
                 } else {
-                    $("#unit_id").empty().append('<option value="">-- Select Unit --</option>');
+                    data.forEach(property => {
+                        // Use property.id here instead of property.property_id
+                        propertyDropdown.append(`<option value="${property.id}">${property.name} - ${property.location}</option>`);
+                    });
+                }
+            }).fail(function(xhr, status, error) {
+                console.error("Error loading properties:", error);
+                alert("Error loading properties. Please try again.");
+            });
+        
+            // Handle property selection change to load units
+            $("#property_id").change(function() {
+                let propertyId = $(this).val();
+                $("#unit_id").empty().append('<option value="">-- Select Unit --</option>');
+        
+                if (propertyId) {
+                    console.log("Fetching units for property ID:", propertyId); // Debugging log
+        
+                    $.getJSON(`${BASE_URL}/properties/${propertyId}/available_units`, function(data) {
+                        console.log("Units fetched:", data); // Debugging log
+                        
+                        if (data.length > 0) {
+                            data.forEach(unit => {
+                                // Append unit_no instead of unit_id
+                                $("#unit_id").append(`<option value="${unit.unit_no}">${unit.unit_no}</option>`);
+                            });
+                        } else {
+                            $("#unit_id").append('<option value="">No available units</option>');
+                        }
+                    }).fail(function(xhr, status, error) {
+                        console.error("Failed to load units:", error);
+                        alert("Error loading units. Please try again.");
+                    });
                 }
             });
-    
+        
             // Handle form submission
             $("#tenant-form").submit(function(event) {
                 event.preventDefault();
-                var formData = {
-                    unit_id: $("#unit_id").val(),
-                    name: $("#name").val(),
-                    email: $("#email").val(),
-                    phone: $("#phone").val(),
-                    csrf_token: $("input[name='csrf_token']").val()  // ✅ Ensure CSRF token is sent
+                
+                const tenantData = {
+                    name: $("#name").val().trim(),
+                    email: $("#email").val().trim(),
+                    phone_no: $("#phone").val().trim(),
+                    property_id: $("#property_id").val(),  // Note: This will be the correct property id now.
+                    unit_no: $("#unit_id").val(),  // Now using unit_no instead of unit_id
+                    csrf_token: $("input[name='csrf_token']").val()
                 };
-    
+        
+                // Validate input fields
+                if (!tenantData.name || !tenantData.email || !tenantData.phone_no || !tenantData.property_id || !tenantData.unit_no) {
+                    $("#error-message").text("All fields are required.");
+                    return;
+                }
+        
+                // Send data to backend
                 $.ajax({
-                    url: "http://127.0.0.1:5000/assign_tenant",
-                    type: "POST",
+                    url: `${BASE_URL}/tenants`,
+                    type: 'POST',
+                    data: JSON.stringify(tenantData),
                     contentType: "application/json",
-                    data: JSON.stringify(formData),  // ✅ Use formData instead of redefining fields
                     success: function(response) {
-                        alert(response.message);
-                        location.reload();
+                        alert(response.message || "Tenant assigned successfully.");
+                        $("#tenant-form")[0].reset();  // Reset form
+                        $("#unit_id").empty().append('<option value="">-- Select Unit --</option>');  // Reset unit dropdown
+                        $("#error-message").text("");  // Clear any previous errors
                     },
                     error: function(xhr) {
-                        console.error("Error:", xhr.responseText);
-                        alert(xhr.responseJSON ? xhr.responseJSON.error : "An error occurred.");
+                        const errorMessage = xhr.responseJSON ? xhr.responseJSON.message : "Error assigning tenant.";
+                        $("#error-message").text(errorMessage);  // Display error in form
                     }
                 });
-            });  // ✅ Close .submit() function properly
-        });  // ✅ Close .ready() function properly
-    </script>
-    
-    
+            });
+        });
+        </script>
+        
+
 </body>
 </html>

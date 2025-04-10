@@ -57,162 +57,156 @@
     </div>
 
     <script>
-       $(document).ready(function () {
-    let selectedProperty = null;
-
-    // Function to fetch properties and update the available units
-    function fetchProperties() {
-        $.getJSON("http://127.0.0.1:5000/properties", function (data) {
-            console.log("Fetched properties data:", data);  // Log the data to debug
-            let propertyList = $(".property-list");
-            propertyList.empty(); // Clear old data
-
-            // Check if data is not empty
-            if (data.length === 0) {
-                propertyList.append("<p>No properties found.</p>");
-            }
-
-            data.forEach(function (property) {
-                let priceFormatted = property.price ? property.price.toLocaleString() : "N/A";  // Ensure valid number
-                let availableUnits = property.available_units !== undefined ? property.available_units : "Unknown";
-                let bedrooms = property.bedrooms !== undefined ? property.bedrooms : "N/A";
-                let size = property.size !== undefined ? property.size : "N/A";
-
-                let propertyHtml = `
-                    <div class="property" data-id="${property.property_id}">
-                        <h2>${property.name}</h2>
-                        <p><strong>Owner:</strong> ${property.owner}</p>
-                        <p><strong>Location:</strong> ${property.location}</p>
-                        <p><strong>Type:</strong> ${property.property_type}</p>
-                        <p><strong>Price:</strong> KES ${priceFormatted}</p>
-                        <p><strong>Available Units:</strong> ${availableUnits}</p>
-                        
-                        <p><strong>Description:</strong> ${property.description || "N/A"}</p>
-                        <button class="btn btn-info view-units-btn" data-id="${property.property_id}">View Units</button>
-                        <div class="units-list" id="units-${property.property_id}" style="display: none; margin-top: 10px;"></div>
-                    </div>
-                `;
-                propertyList.append(propertyHtml);
+        function fetchProperties() {
+            $.getJSON("http://127.0.0.1:5000/properties", function (data) {
+                console.log("Fetched properties data:", data);
+                let propertyList = $(".property-list");
+                propertyList.empty();
+    
+                if (data.length === 0) {
+                    propertyList.append("<p>No properties found.</p>");
+                }
+    
+                data.forEach(function (property) {
+                    let priceFormatted = property.price ? property.price.toLocaleString() : "N/A";
+                    let availableUnits = property.available_units !== undefined ? property.available_units : "Unknown";
+                    let bedrooms = property.bedrooms !== undefined ? property.bedrooms : "N/A";
+                    let size = property.size !== undefined ? property.size : "N/A";
+    
+                    let propertyHtml = `
+                        <div class="property" data-id="${property.id}">
+                            <h2>${property.name}</h2>
+                            <p><strong>Owner:</strong> ${property.owner}</p>
+                            <p><strong>Location:</strong> ${property.location}</p>
+                            <p><strong>Type:</strong> ${property.property_type}</p>
+                            <p><strong>Price:</strong> KES ${priceFormatted}</p>
+                            <p><strong>Available Units:</strong> ${availableUnits}</p>
+                            <p><strong>Description:</strong> ${property.description || "N/A"}</p>
+                            <button class="btn btn-info view-units-btn" data-id="${property.id}">View Units</button>
+                            <div class="units-list" id="units-${property.id}" style="display: none; margin-top: 10px;"></div>
+                        </div>
+                    `;
+                    propertyList.append(propertyHtml);
+                });
+            }).fail(function () {
+                console.error("Error fetching properties.");
+                alert("Error fetching properties. Please check your API and network.");
             });
-        }).fail(function () {
-            console.error("Error fetching properties.");
-            alert("Error fetching properties. Please check your API and network.");
-        });
-    }
-
-    // Fetch properties on page load
-    fetchProperties();
-
-    // ✅ Select a property when clicked
-    $(document).on("click", ".property", function () {
-        $(".property").removeClass("selected");
-        $(this).addClass("selected");
-        selectedProperty = $(this);
-        $("#delete-property-btn, #update-property-btn").prop("disabled", false);
-    });
-
-    // ✅ Delete selected property
-    $("#delete-property-btn").click(function () {
-        if (selectedProperty) {
-            let propertyId = selectedProperty.data("id");
-
-            $.ajax({
-                url: `http://127.0.0.1:5000/properties/${propertyId}`,
-                type: "DELETE",
-                success: function () {
-                    alert("Property deleted successfully!");
-                    fetchProperties(); // Refresh property list
-                    $("#delete-property-btn, #update-property-btn").prop("disabled", true);
-                    selectedProperty = null;
-                },
-                error: function () {
-                    alert("Error deleting property.");
+        }
+    
+        $(document).ready(function () {
+            let selectedProperty = null;
+    
+            fetchProperties();
+    
+            $(document).on("click", ".property", function () {
+                $(".property").removeClass("selected");
+                $(this).addClass("selected");
+                selectedProperty = $(this);
+                $("#delete-property-btn, #update-property-btn").prop("disabled", false);
+            });
+    
+            $("#delete-property-btn").click(function () {
+                if (selectedProperty) {
+                    let propertyId = selectedProperty.data("id");
+    
+                    $.ajax({
+                        url: `http://127.0.0.1:5000/properties/${propertyId}`,
+                        type: "DELETE",
+                        success: function () {
+                            alert("Property deleted successfully!");
+                            fetchProperties();
+                            $("#delete-property-btn, #update-property-btn").prop("disabled", true);
+                            selectedProperty = null;
+                        },
+                        error: function () {
+                            alert("Error deleting property.");
+                        }
+                    });
                 }
             });
-        }
-    });
-
-    // ✅ Redirect to update page
-    $("#update-property-btn").click(function () {
-        if (selectedProperty) {
-            let propertyId = selectedProperty.data("id");
-            window.location.href = `add_propert.html?id=${propertyId}`;
-        }
-    });
-
-    // ✅ View and manage units
-$(document).on("click", ".view-units-btn", function () {
-    let propertyId = $(this).data("id");
-    let unitsList = $(`#units-${propertyId}`);
-
-    if (unitsList.is(":visible")) {
-        unitsList.slideUp(); // Hide if already shown
-    } else {
-        $.getJSON(`http://127.0.0.1:5000/properties/${propertyId}/available_units`, function (units) {
-            let unitsHtml = `
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Unit</th>
-                            <th>Rent (KES)</th>
-                            <th>Description</th>
-                            <th>Available</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            if (units.length > 0) {
-                units.forEach(unit => {
-                    unitsHtml += `
-                        <tr data-unit-id="${unit.unit_id}">
-                            <td>${unit.unit_no}</td>  <!-- Updated key -->
-                            <td>${unit.rent_price.toLocaleString()}</td>
-                            <td>${unit.description || "N/A"}</td>
-                            <td>${unit.available ? "Yes" : "No"}</td>
-                            <td>
-                                <button class="btn btn-danger delete-unit-btn" 
-                                    data-unit-id="${unit.unit_id}" 
-                                    data-property-id="${propertyId}">
-                                    Delete
-                                </button>
-                            </td>
-                        </tr>
-                    `;
+    
+            $("#update-property-btn").click(function () {
+                if (selectedProperty) {
+                    let propertyId = selectedProperty.data("id");
+                    window.location.href = `add_property.html?id=${propertyId}`;
+                }
+            });
+    
+            $(document).on("click", ".view-units-btn", function () {
+                let propertyId = $(this).data("id");
+                if (!propertyId) {
+                    console.error("Invalid property ID");
+                    return;
+                }
+    
+                let url = `http://127.0.0.1:5000/properties/${propertyId}/available_units`;
+                console.log("Fetching units from URL:", url);
+    
+                $.getJSON(url, function (units) {
+                    let unitsHtml = "<table class='table table-bordered'>";
+                    units.forEach(unit => {
+                        unitsHtml += `
+                            <tr>
+                                <td>${unit.unit_no}</td>
+                                <td>${unit.rent_price}</td>
+                                <td>${unit.description}</td>
+                                <td>${unit.available ? 'Yes' : 'No'}</td>
+                            </tr>
+                        `;
+                    });
+                    unitsHtml += "</table>";
+                    $(`#units-${propertyId}`).html(unitsHtml).slideDown();
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error("Error fetching units:", textStatus, errorThrown);
+                    $(`#units-${propertyId}`).html("<p class='text-danger'>Failed to load units.</p>").slideDown();
                 });
-            } else {
-                unitsHtml += `<tr><td colspan="5">No units available.</td></tr>`;
-            }
-            unitsHtml += `</tbody></table>`;
-
-            unitsList.html(unitsHtml).slideDown();
-        }).fail(function (jqXHR, textStatus, errorThrown) {
-            console.error("Error fetching units:", textStatus, errorThrown);
-            unitsList.html(`<p class="text-danger">Failed to load units.</p>`).slideDown();
+            });
+    
+            $(document).on("click", ".assign-tenant-btn", function () {
+                let propertyId = $(this).data("property-id");
+                let unitNo = $(this).data("unit-no");
+                let tenantData = {
+                    email: $("#tenant-email").val(),
+                    name: $("#tenant-name").val(),
+                    phone_no: $("#tenant-phone").val(),
+                    property_id: propertyId,
+                    unit_no: unitNo
+                };
+    
+                $.ajax({
+                    url: "http://127.0.0.1:5000/tenants",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(tenantData),
+                    success: function (response) {
+                        console.log("Tenant assigned successfully:", response);
+                        $(".view-units-btn[data-id='" + propertyId + "']").click();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error assigning tenant:", error);
+                    }
+                });
+            });
+    
+            $(document).on("click", ".delete-unit-btn", function () {
+                let unitId = $(this).data("unit-id");
+                let propertyId = $(this).data("property-id");
+    
+                $.ajax({
+                    url: `http://127.0.0.1:5000/units/${unitId}`,
+                    type: "DELETE",
+                    success: function () {
+                        alert("Unit deleted successfully!");
+                        fetchProperties();
+                        $(`.view-units-btn[data-id="${propertyId}"]`).click();
+                    },
+                    error: function () {
+                        alert("Error deleting unit.");
+                    }
+                });
+            });
         });
-    }
-});
-
-
-    // ✅ Delete Unit and Update Available Units Count
-    $(document).on("click", ".delete-unit-btn", function () {
-        let unitId = $(this).data("unit-id");
-        let propertyId = $(this).data("property-id");
-
-        $.ajax({
-            url: `http://127.0.0.1:5000/units/${unitId}`,
-            type: "DELETE",
-            success: function () {
-                alert("Unit deleted successfully!");
-                fetchProperties(); // Refresh property list to update available units count
-                $(`.view-units-btn[data-id="${propertyId}"]`).click(); // Refresh units table
-            },
-            error: function () {
-                alert("Error deleting unit.");
-            }
-        });
-    });
-});
     </script>
     
 </body>

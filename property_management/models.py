@@ -30,6 +30,11 @@ class Tenant(db.Model):
     email = db.Column(db.String(100), nullable=False, unique=True)
     phone_no = db.Column(db.String(15), nullable=False)
     property_id = db.Column(db.Integer, db.ForeignKey('property.id'), nullable=False)
+
+    # Relationship to Property
+    property = db.relationship('Property', backref='tenants', lazy=True)
+    
+    # Relationship to Unit (one-to-one relationship with unit)
     unit = db.relationship('Unit', backref='tenant', uselist=False)
 
 class Invoice(db.Model):

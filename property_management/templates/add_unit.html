@@ -142,7 +142,7 @@
                 propertyDropdown.append('<option value="">No properties available</option>');
             } else {
                 data.forEach(property => {
-                    propertyDropdown.append(`<option value="${property.property_id}">${property.name}</option>`);
+                    propertyDropdown.append(`<option value="${property.id}">${property.name}</option>`); // ✅ Updated here
                 });
             }
         }).fail(function () {
@@ -250,7 +250,7 @@
                 rent_price: rentPrice,
                 available: $("#is-available").val() === "true",
                 description: $("#description").val(),
-                property_id: $("#property-select").val()  // Make sure property_id is sent
+                property_id: $("#property-select").val()  // ✅ property.id matches dropdown
             };
 
             const unitId = $("#unit-id").val();

@@ -12,7 +12,8 @@
         <h1 class="text-center" id="form-title">Add Property</h1>
         
         <form id="property-form">
-            <input type="hidden" id="property_id"> <!-- Hidden field for update -->
+            <input type="hidden" id="property_id"> 
+            
             <div class="form-group">
                 <label for="name">Property Name</label>
                 <input type="text" class="form-control" id="name" required>
@@ -34,16 +35,12 @@
                 <input type="number" class="form-control" id="price" required>
             </div>
             <div class="form-group">
-                <label for="bedrooms">Bedrooms</label>
-                <input type="number" class="form-control" id="bedrooms" required>
+                <label for="security_fee">Security Fee (KES)</label>
+                <input type="number" class="form-control" id="security_fee" required>
             </div>
             <div class="form-group">
-                <label for="available_units">Available Units</label>
-                <input type="number" class="form-control" id="available_units" required>
-            </div>
-            <div class="form-group">
-                <label for="size">Size</label>
-                <input type="text" class="form-control" id="size" required>
+                <label for="garbage_fee">Garbage Fee (KES)</label>
+                <input type="number" class="form-control" id="garbage_fee" required>
             </div>
             <div class="form-group">
                 <label for="description">Description</label>
@@ -59,9 +56,9 @@
             let propertyId = urlParams.get("id");
 
             if (propertyId) {
-                $("#form-title").text("Update Property"); // Change form title
+                $("#form-title").text("Update Property");
 
-                // Fetch existing property details and pre-fill the form
+                // Fetch property details and pre-fill the form
                 $.getJSON(`http://127.0.0.1:5000/properties/${propertyId}`, function (data) {
                     $("#property_id").val(data.property_id);
                     $("#name").val(data.name);
@@ -69,10 +66,11 @@
                     $("#location").val(data.location);
                     $("#property_type").val(data.property_type);
                     $("#price").val(data.price);
-                    $("#bedrooms").val(data.bedrooms);
-                    $("#available_units").val(data.available_units);
-                    $("#size").val(data.size);
+                    $("#security_fee").val(data.security_fee);
+                    $("#garbage_fee").val(data.garbage_fee);
                     $("#description").val(data.description || "");
+                }).fail(function () {
+                    alert("Error fetching property details.");
                 });
             }
 
@@ -86,9 +84,8 @@
                     location: $("#location").val(),
                     property_type: $("#property_type").val(),
                     price: parseFloat($("#price").val()),
-                    bedrooms: parseInt($("#bedrooms").val()),
-                    available_units: parseInt($("#available_units").val()),
-                    size: $("#size").val(),
+                    security_fee: parseFloat($("#security_fee").val()),
+                    garbage_fee: parseFloat($("#garbage_fee").val()),
                     description: $("#description").val(),
                 };
 
@@ -101,10 +98,10 @@
                         data: JSON.stringify(propertyData),
                         success: function () {
                             alert("Property updated successfully!");
-                            window.location.href = "view_properties.html"; // Redirect back
+                            window.location.href = "view_properties.html";
                         },
-                        error: function () {
-                            alert("Error updating property.");
+                        error: function (xhr) {
+                            alert("Error updating property: " + xhr.responseText);
                         }
                     });
                 } else {
@@ -116,10 +113,10 @@
                         data: JSON.stringify(propertyData),
                         success: function () {
                             alert("Property added successfully!");
-                            window.location.href = "view_properties.html"; // Redirect back
+                            window.location.href = "view_properties.html";
                         },
-                        error: function () {
-                            alert("Error adding property.");
+                        error: function (xhr) {
+                            alert("Error adding property: " + xhr.responseText);
                         }
                     });
                 }
