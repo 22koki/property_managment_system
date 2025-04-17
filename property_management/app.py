@@ -7,6 +7,7 @@ from models import db, Property, Unit, Tenant, Invoice, MaintenanceRequest, Rece
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5500"}}, supports_credentials=True)
+
  # Allow requests from any origin
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'

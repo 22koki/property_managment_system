@@ -73,6 +73,7 @@
 
         .edit-btn {
             background: #28a745;
+            margin-right: 5px;
         }
 
         .delete-btn {
@@ -104,12 +105,12 @@
 
         <div class="form-group">
             <label>Rent Price:</label>
-            <input type="number" id="rent-price" required>
+            <input type="text" id="rent-price" required>
         </div>
 
         <div class="form-group">
             <label>Availability:</label>
-            <select id="is-available">
+            <select id="available">
                 <option value="true">Available</option>
                 <option value="false">Not Available</option>
             </select>
@@ -129,39 +130,36 @@
 
 <script>
     $(document).ready(function () {
-        const BASE_URL = "http://127.0.0.1:5000"; // Correct base URL
-    
-        // Load properties in dropdown
+        const BASE_URL = "http://127.0.0.1:5000";
+
+        // Load property options
         $.getJSON(`${BASE_URL}/properties`, function (data) {
-            console.log(data); // Inspect the data in the console
-    
-            let propertyDropdown = $("#property-select");
-            propertyDropdown.html('<option value="">-- Select Property --</option>'); // Reset dropdown
-    
+            const propertyDropdown = $("#property-select");
+            propertyDropdown.html('<option value="">-- Select Property --</option>');
+
             if (data.length === 0) {
                 propertyDropdown.append('<option value="">No properties available</option>');
             } else {
                 data.forEach(property => {
-                    propertyDropdown.append(`<option value="${property.id}">${property.name}</option>`); // ✅ Updated here
+                    propertyDropdown.append(`<option value="${property.id}">${property.name}</option>`);
                 });
             }
         }).fail(function () {
             alert("Error loading properties.");
         });
-    
-        // Load units when property is selected
+
+        // Load units when a property is selected
         $("#property-select").change(function () {
-            let propertyId = $(this).val();
+            const propertyId = $(this).val();
             if (!propertyId) {
                 $("#units-list").html("<p>Please select a property</p>");
                 return;
             }
             loadUnits(propertyId);
         });
-    
+
         function loadUnits(propertyId) {
             const unitsUrl = `${BASE_URL}/properties/${propertyId}/available_units`;
-            console.log("Fetching units from: " + unitsUrl);  // Debugging
             $.getJSON(unitsUrl)
                 .done(function (data) {
                     let unitsHtml = "";
@@ -171,19 +169,23 @@
                         data.forEach(unit => {
                             unitsHtml += `
                                 <div class="unit-card">
-                                    <div class="unit-header" data-id="${unit.unit_id}">
+                                    <div class="unit-header" data-id="${unit.id}">
                                         <span>Unit ${unit.unit_no}</span>
                                         <span class="arrow">▼</span>
                                     </div>
-                                    <div class="unit-details" id="unit-${unit.unit_id}">
+                                    <div class="unit-details" id="unit-${unit.id}">
                                         <p><strong>Rent:</strong> Ksh ${unit.rent_price.toLocaleString()}</p>
-                                        <p><strong>Status:</strong> ${unit.is_available ? "Available" : "Not Available"}</p>
+                                        <p><strong>Status:</strong> ${unit.available ? "Available" : "Not Available"}</p>
                                         <p><strong>Description:</strong> ${unit.description || "No description"}</p>
-                                        <button class="btn edit-btn" data-id="${unit.unit_id}" data-no="${unit.unit_no}" data-price="${unit.rent_price}" data-available="${unit.is_available}" data-description="${unit.description}">Edit</button>
-                                        <button class="btn delete-btn" data-id="${unit.unit_id}">Delete</button>
+                                        <button class="btn edit-btn"
+                                            data-id="${unit.id}"
+                                            data-no="${unit.unit_no}"
+                                            data-price="${unit.rent_price}"
+                                            data-available="${unit.available}"
+                                            data-description="${unit.description}">Edit</button>
+                                        <button class="btn delete-btn" data-id="${unit.id}">Delete</button>
                                     </div>
-                                </div>
-                            `;
+                                </div>`;
                         });
                     }
                     $("#units-list").html(unitsHtml);
@@ -192,28 +194,28 @@
                     $("#units-list").html("<p>Error loading units</p>");
                 });
         }
-    
-        // Toggle unit details visibility when unit header is clicked
+
+        // Toggle unit details
         $(document).on('click', '.unit-header', function () {
             const unitId = $(this).data('id');
             const unitDetails = $(`#unit-${unitId}`);
-            unitDetails.toggle();  // Toggle visibility of unit details
+            unitDetails.toggle();
             const arrow = $(this).find('.arrow');
-            arrow.text(unitDetails.is(":visible") ? "▲" : "▼");  // Change arrow direction
+            arrow.text(unitDetails.is(":visible") ? "▲" : "▼");
         });
-    
-        // Handle Edit button click
+
+        // Edit unit
         $(document).on('click', '.edit-btn', function () {
             const unitData = $(this).data();
             $("#unit-id").val(unitData.id);
             $("#unit-no").val(unitData.no);
-            $("#rent-price").val(unitData.price.toLocaleString()); // Format rent with commas
-            $("#is-available").val(unitData.available);
+            $("#rent-price").val(unitData.price.toLocaleString());
+            $("#available").val(unitData.available.toString());
             $("#description").val(unitData.description);
             $("#unit-form button").text("Update Unit");
         });
-    
-        // Handle Delete button click
+
+        // Delete unit
         $(document).on('click', '.delete-btn', function () {
             const unitId = $(this).data('id');
             if (confirm("Are you sure you want to delete this unit?")) {
@@ -222,7 +224,7 @@
                     type: 'DELETE',
                     success: function () {
                         alert("Unit deleted successfully.");
-                        loadUnits($("#property-select").val());  // Reload units after delete
+                        loadUnits($("#property-select").val());
                     },
                     error: function () {
                         alert("Error deleting unit.");
@@ -230,33 +232,33 @@
                 });
             }
         });
-    
-        // Allow only numbers and commas in the rent price input
+
+        // Format rent price input
         $("#rent-price").on("input", function () {
             let value = $(this).val();
-            value = value.replace(/[^0-9,]/g, ""); // Remove any non-numeric and non-comma characters
+            value = value.replace(/[^0-9,]/g, "");
             $(this).val(value);
         });
-    
-        // Handle form submission to save or update unit
+
+        // Submit form
         $("#unit-form").submit(function (e) {
             e.preventDefault();
-    
+
             const rentPriceRaw = $("#rent-price").val();
-            const rentPrice = parseFloat(rentPriceRaw.replace(/,/g, "")); // Remove commas before sending
-    
+            const rentPrice = parseFloat(rentPriceRaw.replace(/,/g, ""));
+
             const unitData = {
-                unit_no: $("#unit-no").val().trim(),  // Correct ID based on your HTML
+                unit_no: $("#unit-no").val().trim(),
                 rent_price: rentPrice,
-                available: $("#is-available").val() === "true",
+                available: $("#available").val() === "true",
                 description: $("#description").val(),
-                property_id: $("#property-select").val()  // ✅ property.id matches dropdown
+                property_id: $("#property-select").val()
             };
 
             const unitId = $("#unit-id").val();
             const url = unitId ? `${BASE_URL}/units/${unitId}` : `${BASE_URL}/units`;
             const type = unitId ? 'PUT' : 'POST';
-    
+
             $.ajax({
                 url: url,
                 type: type,
@@ -264,9 +266,9 @@
                 contentType: "application/json",
                 success: function () {
                     alert(unitId ? "Unit updated successfully." : "Unit added successfully.");
-                    $("#unit-form")[0].reset();  // Reset form
-                    $("#unit-id").val("");  // Reset hidden field
-                    loadUnits($("#property-select").val());  // Reload units after submit
+                    $("#unit-form")[0].reset();
+                    $("#unit-id").val("");
+                    loadUnits($("#property-select").val());
                     $("#unit-form button").text("Save Unit");
                 },
                 error: function () {
