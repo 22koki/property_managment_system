@@ -7,6 +7,7 @@ from models import db, Property, Unit, Tenant, Invoice, MaintenanceRequest, Rece
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5500"}}, supports_credentials=True)
+CORS(app, resources={r"/properties/*": {"origins": "http://127.0.0.1:5500"}})
 
  # Allow requests from any origin
 
@@ -86,41 +87,84 @@ def generate_invoice(tenant_id):
 
 
 # CRUD Operations for Properties
-@app.route('/properties', methods=['GET', 'POST'])
-def properties():
-    if request.method == 'POST':
-        data = request.get_json()
-        new_property = Property(
-            name=data['name'],
-            owner=data['owner'],
-            location=data['location'],
-            property_type=data['property_type'],
-            price=data['price'],
-            description=data.get('description', ''),
-            security_fee=data.get('security_fee', 500),
-            garbage_fee=data.get('garbage_fee', 200),
-            
-          
-        )
-        db.session.add(new_property)
-        db.session.commit()
-        return jsonify({'message': 'Property added successfully', 'id': new_property.id}), 201
+# CRUD Operations
+@app.route('/properties', methods=['GET'])
+def get_properties():
+    properties = Property.query.all()
+    return jsonify([
+        {
+            'id': prop.id,
+            'name': prop.name,
+            'owner': prop.owner,
+            'location': prop.location,
+            'property_type': prop.property_type,
+            'price': prop.price,
+            'description': prop.description,
+            'available_units': Unit.query.filter_by(property_id=prop.id).count()
+        }
+        for prop in properties
+    ])
 
-    elif request.method == 'GET':
-        properties = Property.query.all()
-        return jsonify([
-            {
-                'id': prop.id,
-                'name': prop.name,
-                'owner': prop.owner,
-                'location': prop.location,
-                'property_type': prop.property_type,
-                'price': prop.price,
-                'description': prop.description,
-                'available_units': Unit.query.filter_by(property_id=prop.id).count()
-            }
-            for prop in properties
-        ])
+@app.route('/properties', methods=['POST'])
+def add_property():
+    data = request.get_json()
+    new_property = Property(
+        name=data['name'],
+        owner=data['owner'],
+        location=data['location'],
+        property_type=data['property_type'],
+        price=data['price'],
+        description=data.get('description', ''),
+        security_fee=data.get('security_fee', 500),
+        garbage_fee=data.get('garbage_fee', 200)
+    )
+    db.session.add(new_property)
+    db.session.commit()
+    return jsonify({'message': 'Property added successfully', 'id': new_property.id}), 201
+
+@app.route('/properties/<int:property_id>', methods=['GET'])
+def get_property(property_id):
+    property = Property.query.get_or_404(property_id)
+    return jsonify({
+        'id': property.id,
+        'name': property.name,
+        'owner': property.owner,
+        'location': property.location,
+        'property_type': property.property_type,
+        'price': property.price,
+        'description': property.description,
+        'available_units': Unit.query.filter_by(property_id=property.id).count()
+    })
+
+@app.route('/properties/<int:property_id>', methods=['PUT'])
+def update_property(property_id):
+    property = Property.query.get_or_404(property_id)
+    data = request.get_json()
+
+    property.name = data['name']
+    property.owner = data['owner']
+    property.location = data['location']
+    property.property_type = data['property_type']
+    property.price = data['price']
+    property.description = data.get('description', property.description)
+    property.security_fee = data.get('security_fee', property.security_fee)
+    property.garbage_fee = data.get('garbage_fee', property.garbage_fee)
+
+    db.session.commit()
+    return jsonify({'message': 'Property updated successfully'}), 200
+@app.route('/properties/<int:property_id>', methods=['DELETE', 'OPTIONS'])
+def delete_property(property_id):
+    if request.method == 'OPTIONS':
+        # For handling CORS preflight
+        return '', 200
+
+    property_to_delete = Property.query.get_or_404(property_id)
+    
+    # ✅ Actually delete the property
+    db.session.delete(property_to_delete)
+    db.session.commit()
+    
+    return {'message': f'Property {property_id} deleted successfully'}, 200
 
 # CRUD Operations for Units
 @app.route('/units', methods=['POST'])

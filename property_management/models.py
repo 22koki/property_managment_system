@@ -13,7 +13,7 @@ class Property(db.Model):
     description = db.Column(db.Text, nullable=True)
     security_fee = db.Column(db.Float, nullable=False, default=500)
     garbage_fee = db.Column(db.Float, nullable=False, default=200)
-    units = db.relationship('Unit', backref='property', lazy=True)
+    units = db.relationship('Unit', backref='property', lazy=True, cascade="all, delete-orphan")
 
 class Unit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,7 +29,7 @@ class Tenant(db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
     phone_no = db.Column(db.String(15), nullable=False)
-    property_id = db.Column(db.Integer, db.ForeignKey('property.id'), nullable=False)
+    property_id = db.Column(db.Integer, db.ForeignKey('property.id'), nullable=True)
 
     # Relationship to Property
     property = db.relationship('Property', backref='tenants', lazy=True)
