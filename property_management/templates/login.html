@@ -1,46 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="/property_management/static/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login - Zuripo</title>
+  
+  <!-- Bootstrap + Icons + Lordicon -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.lordicon.com/lordicon.js"></script>
+
+  <style>
+    body {
+      background: linear-gradient(to right, #e0f7fa, #f1f8e9);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .login-container {
+      background-color: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      max-width: 450px;
+      width: 100%;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    .company-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .company-header img {
+      max-width: 80px;
+      margin-bottom: 10px;
+    }
+
+    .company-header h3 {
+      margin: 0;
+      font-weight: bold;
+      color: #2e7d32;
+    }
+
+    .company-header p {
+      margin: 0;
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+
+    .form-control {
+      border-radius: 10px;
+    }
+
+    .form-control:focus {
+      box-shadow: none;
+      border-color: #007bff;
+    }
+
+    .btn-login {
+      width: 100%;
+      border-radius: 10px;
+    }
+
+    .icon-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 25px;
+    }
+
+    .toggle-password {
+      cursor: pointer;
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      color: #888;
+    }
+
+    .form-group {
+      position: relative;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
-
 <body>
-    <header>
-        <div class="logo">
-            <img src="/static/uploads/t.png" alt="ZURIPO Logo">
-        </div>
-        <h1>ZURIPO Property Specialists</h1>
-    </header>
 
-    <main>
-        <div class="login-container">
-            <h1>Login</h1>
-            <form action="/login" method="POST">
-                <div class="input-group">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" required>
-                </div>
+<div class="login-container">
+  <!-- Company Header -->
+  <div class="company-header">
+    <img src="/property_management/static/uploads/t.png" alt="Zuripo Logo">
+    <h3>Zuripo Property Specialists Ltd</h3>
+    <p>Garden Estate, Off Northern Bypass</p>
+  </div>
 
-                <div class="input-group">
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
+  <!-- Animated Icon -->
+  <div class="icon-container">
+    <lord-icon
+        src="https://cdn.lordicon.com/tyounuzx.json"
+        trigger="loop"
+        colors="primary:#121331,secondary:#007bff"
+        style="width:80px;height:80px">
+    </lord-icon>
+  </div>
 
-                <button type="submit" class="btn">Login</button>
-            </form>
-            <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
-        </div>
-    </main>
+  <!-- Login Form -->
+  <form id="loginForm">
+    <div class="mb-3">
+      <label for="username" class="form-label">Email or Username</label>
+      <input type="text" class="form-control" id="username" placeholder="Enter your username" required>
+    </div>
 
-    <footer>
-        <p>Location: Garden Estate, Off Northern Bypass, Nairobi</p>
-        <p>Phone: +254 792 262 000 | Email: info@zuripoproperties.co.ke</p>
-        <p>&copy; 2024 ZURIPO Property Specialists</p>
-        <p>All Rights Reserved</p>
-    </footer>
+    <div class="mb-3 form-group">
+      <label for="password" class="form-label">Password</label>
+      <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+      <i class="bi bi-eye-slash toggle-password" id="togglePassword"></i>
+    </div>
+
+    <div class="d-grid mb-3">
+      <button type="submit" class="btn btn-primary btn-login">Login</button>
+    </div>
+
+    <p class="text-center text-muted mb-0">Forgot your password? <a href="#" class="text-decoration-none">Reset it</a></p>
+  </form>
+
+  <!-- Loader Animation -->
+  <div id="loginLoader" class="text-center mt-4" style="display:none;">
+    <lord-icon
+      src="https://cdn.lordicon.com/eqwejzcl.json"
+      trigger="loop"
+      delay="1500"
+      colors="primary:#007bff,secondary:#545454"
+      style="width:100px;height:100px">
+    </lord-icon>
+    <p class="mt-2 text-muted">Logging you in, please wait...</p>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+  <div id="loginToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        ✅ Login successful. Redirecting...
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Password toggle
+  const togglePassword = document.querySelector("#togglePassword");
+  const password = document.querySelector("#password");
+
+  togglePassword.addEventListener("click", function () {
+    const type = password.getAttribute("type") === "password" ? "text" : "password";
+    password.setAttribute("type", type);
+    this.classList.toggle("bi-eye");
+    this.classList.toggle("bi-eye-slash");
+  });
+
+  // Login form handling
+  document.getElementById('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const username = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
+
+    if (username === "" || pass === "") {
+      alert("Please fill in all fields!");
+      return;
+    }
+
+    // Hide form, show loader
+    this.style.display = 'none';
+    document.getElementById('loginLoader').style.display = 'block';
+
+    // Show toast
+    const toast = new bootstrap.Toast(document.getElementById('loginToast'));
+    toast.show();
+
+    // Simulate successful login
+    setTimeout(() => {
+      window.location.href = "dashboard.html"; // Set actual dashboard path
+    }, 3000);
+  });
+</script>
+
 </body>
 </html>

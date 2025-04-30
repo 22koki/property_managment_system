@@ -50,11 +50,14 @@ def dashboard():
     invoices = Invoice.query.all()
     return render_template('dashboard.html', properties=properties, tenants=tenants, invoices=invoices)
 
-# Generate Invoice with Auto-fill
 @app.route('/generate_invoice/<int:tenant_id>', methods=['POST'])
 @login_required
 def generate_invoice(tenant_id):
     tenant = Tenant.query.get(tenant_id)
+    
+    if not tenant:
+        return jsonify({"success": False, "message": "Tenant not found"})
+
     unit = tenant.unit
     property_ = tenant.property  # Get the associated property for the tenant
 
@@ -66,6 +69,16 @@ def generate_invoice(tenant_id):
     # Calculate the total amount
     total_amount = unit.rent_price + property_.security_fee + property_.garbage_fee + float(water_bill)
 
+    # Prepare the invoice data
+    invoice_data = {
+        "tenant_name": tenant.name,
+        "tenant_email": tenant.email,
+        "water_bill": water_bill,
+        "total_amount": total_amount
+    }
+
+    # Send the invoice data back to the frontend
+    return jsonify({"success": True, "invoice": invoice_data})
     # Create a new invoice and add it to the database
     invoice = Invoice(
         tenant_id=tenant.id,
@@ -331,6 +344,7 @@ def vacate_unit(unit_no):
 
     db.session.commit()
     return jsonify({"message": "Unit marked as available"}), 200
+
 
 # Logout
 @app.route('/logout')

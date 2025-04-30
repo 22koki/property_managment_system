@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View Tenants | Zuripo Property Specialists Ltd</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap 5 CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+  <style>
+    body {
+      background-color: #f4f7fa;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .company-header {
+      background-color: #004080; /* Updated to a darker shade for better contrast */
+      color: white;
+      padding: 20px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 0 0 15px 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .company-header img {
+      height: 120px; /* Increased logo size */
+      margin-right: 20px;
+    }
+
+    .company-header > div {
+      text-align: right;
+    }
+
+    .company-header h2 {
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+
+    .company-header p {
+      font-size: 1rem;
+      margin: 5px 0;
+    }
+
+    .container-custom {
+      max-width: 1200px;
+      margin: 40px auto;
+      background-color: #fff;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    .btn-add, .btn-back {
+      float: right;
+    }
+
+    .search-box {
+      margin-bottom: 20px;
+    }
+
+    thead {
+      background-color: #003366;
+      color: white;
+    }
+
+    tbody tr:hover {
+      background-color: #f5faff;
+    }
+
+    .table td, .table th {
+      vertical-align: middle;
+    }
+
+    .table th {
+      text-align: center;
+    }
+
+    .table td {
+      text-align: center;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    .company-header h2, .company-header p {
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="company-header">
+    <img src="/property_management/static/uploads/t.png" alt="Company Logo">
+    <div>
+      <h2>Zuripo Property Specialists Ltd</h2>
+      <p>Garden Estate, Off Northern Bypass</p>
+      <p>Phone: 254 792 262 000</p>
+      <p>Email: info@zuripoproperties.co.ke</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container container-custom">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3><i class="bi bi-people-fill"></i> Tenants List</h3>
+      <a href="/add-tenant" class="btn btn-primary btn-add"><i class="bi bi-person-plus-fill"></i> Add Tenant</a>
+    </div>
+
+    <!-- Back Button -->
+    <a href="dashboard.html" class="btn btn-secondary btn-back"><i class="bi bi-arrow-left-circle-fill"></i> Back to Dashboard</a>
+
+    <input type="text" id="searchInput" class="form-control search-box" placeholder="Search tenant by name...">
+
+    <div id="tenant-table-container">
+      <div class="text-center text-muted py-4">Loading tenants...</div>
+    </div>
+
+  </div>
+
+  <!-- JS -->
+  <script>
+    let tenantData = [];
+  
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('http://localhost:5000/tenants') // <--- Updated line
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          tenantData = data;
+          renderTable(data);
+        })
+        .catch(error => {
+          console.error('Error fetching tenants:', error);
+          document.getElementById('tenant-table-container').innerHTML =
+            '<p class="text-danger">Error loading tenants.</p>';
+        });
+  
+      document.getElementById('searchInput').addEventListener('input', function () {
+        const searchTerm = this.value.toLowerCase();
+        const filtered = tenantData.filter(t => t.name.toLowerCase().includes(searchTerm));
+        renderTable(filtered);
+      });
+    });
+  
+    function renderTable(data) {
+      if (data.length === 0) {
+        document.getElementById('tenant-table-container').innerHTML = '<p class="text-warning">No tenants found.</p>';
+        return;
+      }
+  
+      let tableHTML = `
+        <div class="table-responsive">
+          <table class="table table-striped table-bordered shadow-sm">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th><i class="bi bi-person-fill"></i> Name</th>
+                <th><i class="bi bi-envelope-fill"></i> Email</th>
+                <th><i class="bi bi-telephone-fill"></i> Phone</th>
+                <th><i class="bi bi-house-fill"></i> Unit</th>
+                <th><i class="bi bi-building"></i> Property</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+  
+      data.forEach((tenant, index) => {
+        tableHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${tenant.name}</td>
+            <td>${tenant.email}</td>
+            <td>${tenant.phone_no}</td>
+            <td>${tenant.unit || '-'}</td>
+            <td>${tenant.property || '-'}</td>
+          </tr>
+        `;
+      });
+  
+      tableHTML += '</tbody></table></div>';
+      document.getElementById('tenant-table-container').innerHTML = tableHTML;
+    }
+  </script>
+  
+</body>
+</html>

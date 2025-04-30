@@ -89,6 +89,7 @@
             margin-top: 20px;}
  
 /* Container for the Statement */
+/* Container for the Statement */
 .statement-container {
     max-width: 800px;
     margin: 20px auto;
@@ -104,7 +105,6 @@
 }
 
 /* Header Styling */
-/* Header Styling */
 .statement-container header {
     display: flex;
     flex-wrap: wrap;
@@ -115,39 +115,38 @@
 }
 
 .statement-container header .logo {
-    flex: 0 0 auto; /* Ensure logo doesn't stretch */
-    margin-right: 20px; /* Add some spacing to the right of the logo */
+    flex: 0 0 auto;
+    margin-right: 20px;
 }
 
 .statement-container header .logo img {
-    max-width: 100px; /* Adjust size for better space-saving */
+    max-width: 100px;
     height: auto;
 }
 
-.statement-container header .details {
-    flex: 1 1 auto; /* Allow the details to take remaining space */
+.statement-container header .company-details {
+    flex: 1 1 auto;
 }
 
-.statement-container header .details h1 {
+.statement-container header .company-details h1 {
     font-size: 24px;
     font-weight: bold;
     color: #333;
     margin: 5px 0;
 }
 
-.statement-container header .details p {
+.statement-container header .company-details p {
     font-size: 14px;
     color: #666;
     margin: 2px 0;
 }
 
-.statement-container header .details h2 {
+.statement-container header .company-details h2 {
     font-size: 10px;
     font-style: oblique;
     color: #0d63d3;
     margin-top: 2px;
 }
-
 
 /* Tenant and Property Info Styling */
 .tenant-property-info {
@@ -221,6 +220,16 @@
     font-size: 14px;
 }
 
+/* Bottom Right Section */
+.bottom-summary {
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.bottom-summary p {
+    margin: 5px 0;
+}
+
 /* Button Styling */
 .btn-primary, .btn-success, .btn-info, .btn-danger {
     width: 100%;
@@ -228,36 +237,23 @@
 }
 
 .btn-primary {
-    background-color: #4CAF50; /* Green */
+    background-color: #4CAF50;
     border-color: #4CAF50;
 }
 
 .btn-success {
-    background-color: #008CBA; /* Blue */
+    background-color: #008CBA;
     border-color: #008CBA;
 }
 
 .btn-info {
-    background-color: #FFC107; /* Yellow */
+    background-color: #FFC107;
     border-color: #FFC107;
 }
 
 .btn-danger {
-    background-color: #f44336; /* Red */
+    background-color: #f44336;
     border-color: #f44336;
-}
-
-/* Bottom Right Section */
-.bottom-right {
-    position: fixed;
-    bottom: 10px;
-    right: 20px;
-    font-size: 1.2rem;
-    font-weight: bold;
-}
-
-.balance-due {
-    margin-top: 20px;
 }
 
 /* Footer Styling */
@@ -303,6 +299,7 @@ footer {
     width: 48%;
 }
 
+
     </style>
 </head>
 <body>
@@ -326,9 +323,10 @@ footer {
                 <legend>Tenant and Property Information</legend>
                 <div class="side-by-side">
                     <div class="form-group">
+                        <!-- Corrected the ID to be lowercase as it should match the JS code -->
                         <input type="text" class="form-control" id="tenantName" placeholder="Tenant Name" required>
                     </div>
-                    
+        
                     <div class="form-group">
                         <input type="text" class="form-control" id="tenantLocation" placeholder="Location" required>
                     </div>
@@ -343,18 +341,22 @@ footer {
                 </div>
                 <div class="side-by-side">
                     <div class="form-group">
-                        <input type="text" class="form-control" id="propertyLocation" placeholder="Property Location" required>
+                      <input type="text" class="form-control" id="propertyLocation" placeholder="Property Location" required>
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" id="propertyOwner" placeholder="Property Owner" required>
+                      <input type="text" class="form-control" id="propertyOwner" placeholder="Property Owner" required>
                     </div>
-                </div>
+                  </div>
+                  
                 <div class="form-group">
-                    <input type="text" class="form-control" id="HouseNo" placeholder="House Number" required>
+                    <input type="text" class="form-control" id="houseNo" placeholder="House Number" required>
+
                 </div>
             </fieldset>
+        </form>
+        
 
- <!-- Account Activity -->
+ <!-- Account Activity -->  
 <fieldset class="mb-4">
     <legend>Account Activity</legend>
     <table class="table table-bordered" id="activityTable">
@@ -423,6 +425,7 @@ footer {
             </div>
         </header>
     
+        <!-- Tenant and Property Info -->
         <div class="tenant-property-info">
             <div class="tenant-info">
                 <h3>Tenant Information</h3>
@@ -431,7 +434,6 @@ footer {
                 <p><strong>Phone:</strong> <span id="tenantPhonePreview"></span></p>
                 <p><strong>Email:</strong> <span id="tenantEmailPreview"></span></p>
                 <p><strong>House No:</strong> <span id="tenantHouseNoPreview"></span></p>
-            
             </div>
             <div class="property-info">
                 <h3>Property Information</h3>
@@ -440,10 +442,7 @@ footer {
             </div>
         </div>
     
-        <div id="statementOutput"></div>
-    
-       
-    
+        <!-- Account Activity Table -->
         <div class="account-summary">
             <h3>Account Activity</h3>
             <table class="table table-bordered">
@@ -468,32 +467,73 @@ footer {
                     </tr>
                 </tbody>
             </table>
-            <div class="payment-details">
-                <h3>Please Make Payment To:</h3>
-                <div class="payment-method bank">
-                    <h4>Via Bank</h4>
-                    <p><strong>Bank Name:</strong> <span id="bankNamePreview"></span></p>
-                    <p><strong>Account Number:</strong> <span id="accountNumberPreview"></span></p>
-                </div>
-                <div class="payment-method mpesa">
-                    <h4>Via M-Pesa</h4>
-                    <p><strong>Paybill:</strong> <span id="mpesaPaybillPreview"></span></p>
-                    <p><strong>Account Name:</strong> <span id="mpesaAccountPreview"></span></p>
-                </div>
+        </div>
+    
+        <!-- Payment Details -->
+        <div class="payment-details">
+            <h3>Please Make Payment To:</h3>
+            <div class="payment-method bank">
+                <h4>Via Bank</h4>
+                <p><strong>Bank Name:</strong> <span id="bankNamePreview"></span></p>
+                <p><strong>Account Number:</strong> <span id="accountNumberPreview"></span></p>
             </div>
-            <div class="top-right">
-                <p><strong>Due Date:</strong> <span id="dueDate"></span></p>
-                <p><strong>House No:</strong> <span id="houseNo"></span></p>
+            <div class="payment-method mpesa">
+                <h4>Via M-Pesa</h4>
+                <p><strong>Paybill:</strong> <span id="mpesaPaybillPreview"></span></p>
+                <p><strong>Account Name:</strong> <span id="mpesaAccountPreview"></span></p>
             </div>
         </div>
     
+        <!-- Final Summary: Due Date, House No, and Balance Due -->
         <div class="final-summary">
-            <p><strong>Due Date:</strong> <span id="dueDate"></span></p>
+            <div class="bottom-summary">
+                <p><strong>Due Date:</strong> <span id="dueDate"></span></p>
+                <p><strong>House No:</strong> <span id="houseNo"></span></p>
+            </div>
             <p><strong>Balance Due:</strong> <span id="finalBalance"></span></p>
         </div>
     </div>
     
+    
     <script>
+   // Wait for the DOM to fully load
+   document.addEventListener('DOMContentLoaded', function () {
+    const tenantNameInput = document.getElementById('tenant-name');
+    
+    // Ensure the element exists before attaching the event listener
+    if (tenantNameInput) {
+        tenantNameInput.addEventListener('input', function () {
+            const tenantName = tenantNameInput.value;
+            if (!tenantName) return;  // If no name is entered, do nothing
+
+            // Fetch tenant details from the API
+            fetch(`http://localhost:5000/tenant_by_name/${encodeURIComponent(tenantName)}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Tenant not found');
+                    return response.json();  // Parse the JSON response
+                })
+                .then(data => {
+                    // Update the form with tenant data
+                    document.getElementById('tenantEmail').value = data.tenant_email || '';
+                    document.getElementById('tenantPhone').value = data.tenant_phone || '';
+                    document.getElementById('HouseNo').value = data.unit_no || '';
+                    const previewPropertyName = document.getElementById('preview-property-name');
+                    const previewTenantLocation = document.getElementById('preview-tenant-location');
+ // Assuming the property name is the owner's name
+                })
+                .catch(error => {
+                    console.error('Error fetching tenant data:', error);
+                    alert('Tenant not found or an error occurred.');
+                });
+        });
+    } else {
+        console.error("The tenant-name input element was not found.");
+    }
+});
+
+
+    
+
       function generateStatement() {
     // Fetch values from the input table
     const activityTable = document.getElementById('activityTable').getElementsByTagName('tbody')[0];
@@ -579,45 +619,7 @@ footer {
     // Add dynamic data here
     doc.save("BillingStatement.pdf");
 
-    // Function to create a new row
-function createNewRow() {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td><input type="text" class="form-control" placeholder="Date" required></td>
-        <td><input type="text" class="form-control" placeholder="Reference" required></td>
-        <td><input type="text" class="form-control" placeholder="Description" required></td>
-        <td><input type="number" class="form-control" placeholder="Debit (Ksh)" required></td>
-        <td><input type="number" class="form-control" placeholder="Credit (Ksh)" required></td>
-        <td><input type="number" class="form-control" placeholder="Amount (Ksh)" required></td>
-        <td>
-            <button type="button" class="btn btn-success btn-sm add-row">+</button>
-            <button type="button" class="btn btn-danger btn-sm remove-row">-</button>
-        </td>
-    `;
-    return row;
-}
-
-// Add row event handler
-document.addEventListener('click', function (event) {
-    const table = document.getElementById('activityTable').getElementsByTagName('tbody')[0];
-
-    // Add a new row
-    if (event.target && event.target.classList.contains('add-row')) {
-        const newRow = createNewRow(); // Create the new row
-        table.appendChild(newRow); // Append the new row to the table
-    }
-
-    // Remove a row
-    if (event.target && event.target.classList.contains('remove-row')) {
-        const row = event.target.closest('tr');
-        const rowCount = table.rows.length;
-        if (rowCount > 1) { // Ensure at least one row remains
-            row.remove();
-        } else {
-            alert('You must have at least one row.');
-        }
-    }
-});
+    
 
 // Automatically add a new row when pressing "Enter" after filling the last input field
 document.getElementById('activityTable').addEventListener('keydown', function (event) {

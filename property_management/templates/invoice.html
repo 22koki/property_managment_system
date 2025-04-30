@@ -359,11 +359,12 @@ button:active {
 </fieldset>
 
 
-<button type="button" onclick="generateInvoice(event)">Generate Invoice</button>
+<!-- Make sure this button passes the event -->
+<button onclick="generateInvoice(event)">Generate Invoice</button>
+
+
 <button type="button" onclick="downloadPDF()">Download PDF</button>
     </form>
-
-   <!-- Invoice Preview -->
 <!-- Invoice Preview -->
 <div id="invoice-preview" class="invoice-preview" style="display: none;">
   <h3>Rental Invoice</h3>
@@ -392,6 +393,10 @@ button:active {
       <p><strong>Invoice No:</strong> <span id="preview-invoice-no"></span></p>
       <p><strong>Date:</strong> <span id="preview-date"></span></p>
       <p><strong>Due Date:</strong> <span id="preview-due-date"></span></p>
+    </div>
+    <div>
+      <p><strong>Water Bill:</strong> <span id="preview-water-bill"></span></p>
+      <p><strong>Total Amount:</strong> <span id="preview-total-amount"></span></p>
     </div>
   </div>
 
@@ -438,7 +443,68 @@ button:active {
   <h4>Terms and Conditions</h4>
   <p>All payments should be made by the due date. Late payments incur a fee of Kshs 250 per day.</p>
 </div>
+
   <script>
+    // Move the functions outside of the DOMContentLoaded event listener
+function generateInvoice(event) {
+    event.preventDefault();
+
+    const tenantName = document.getElementById('tenant-name').value;
+    const tenantEmail = document.getElementById('tenant-email').value;
+    const waterBill = document.getElementById('water-bill').value;
+    const tenantId = document.getElementById('tenant-id').value;
+
+    console.log({
+        tenantName,
+        tenantEmail,
+        waterBill,
+        tenantId
+    });
+
+    fetch(`/generate_invoice/${tenantId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            tenant_name: tenantName,
+            tenant_email: tenantEmail,
+            water_bill: waterBill
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Backend Response:", data);
+        if (data.success) {
+            alert("Invoice generated successfully");
+            showInvoicePreview(data.invoice);
+        } else {
+            alert("Failed to generate invoice");
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("An error occurred while generating the invoice");
+    });
+}
+
+function showInvoicePreview(invoiceData) {
+    document.getElementById('preview-tenant-name').innerText = invoiceData.tenant_name;
+    document.getElementById('preview-tenant-email').innerText = invoiceData.tenant_email;
+    document.getElementById('preview-water-bill').innerText = `$${invoiceData.water_bill}`;
+    document.getElementById('preview-total-amount').innerText = `$${invoiceData.total_amount}`;
+
+    document.getElementById('invoice-preview').style.display = 'block';
+}
+
+function downloadPDF() {
+    const invoicePreview = document.getElementById('invoice-preview');
+    
+    // Using the html2pdf library to generate the PDF
+    html2pdf()
+        .from(invoicePreview)
+        .save('invoice.pdf'); // You can change the filename here
+}
     // Wait for the DOM to fully load
     document.addEventListener('DOMContentLoaded', function () {
       // Event listener for tenant name input field
@@ -548,65 +614,8 @@ button:active {
   
       document.querySelector('#items-table').addEventListener('input', calculateTotal);
   
-      function generateInvoice(event) {
-    // Prevent the form from reloading the page
-    event.preventDefault();
+     
 
-    const tenantName = document.getElementById('tenant-name').value;
-    const tenantEmail = document.getElementById('tenant-email').value;
-    const waterBill = document.getElementById('water-bill').value;
-    const tenant_id = document.getElementById('tenant-id').value;  // Ensure tenant ID is available
-
-    // Log the form data to ensure everything is being captured correctly
-    console.log({
-        tenantName,
-        tenantEmail,
-        waterBill,
-        tenant_id
-    });
-
-    // Send data to backend (using fetch to make an AJAX request)
-    fetch(`/generate_invoice/${tenant_id}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            tenant_name: tenantName,
-            tenant_email: tenantEmail,
-            water_bill: waterBill
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Backend Response:", data);
-        if (data.success) {
-            alert("Invoice generated successfully");
-            // You can update the preview section here, if needed
-        } else {
-            alert("Failed to generate invoice");
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert("An error occurred while generating the invoice");
-    });
-}
-function showInvoicePreview(invoiceData) {
-    document.getElementById('preview-tenant-name').innerText = invoiceData.tenant_name;
-    // Populate other fields...
-    document.getElementById('invoice-preview').style.display = 'block';
-}
-
-     // Function to download the invoice as a PDF
-function downloadPDF() {
-  const invoicePreview = document.getElementById('invoice-preview');
-  
-  // Using the html2pdf library to generate the PDF
-  html2pdf()
-    .from(invoicePreview)
-    .save('invoice.pdf'); // You can change the filename here
-};
     });
   </script>
   
