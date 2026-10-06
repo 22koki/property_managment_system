@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zuripo Property OS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --ink:#172033; --muted:#718096; --bg:#f5f7fb; --panel:#fff;
+      --brand:#153a5b; --brand2:#2f6d73; --accent:#e4a853; --line:#e8edf3;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Segoe UI,Arial,sans-serif}
+    .shell{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+    .sidebar{background:linear-gradient(180deg,#102d46,#173b4a);color:#fff;padding:24px 18px;position:sticky;top:0;height:100vh}
+    .brand{font-size:1.25rem;font-weight:800;letter-spacing:.4px}.brand small{display:block;font-size:.72rem;font-weight:500;color:#c6d7df;margin-top:4px}
+    .nav-link{color:#dbe8ed;border-radius:12px;padding:11px 13px;margin:4px 0;display:flex;gap:10px;align-items:center}
+    .nav-link:hover,.nav-link.active{background:rgba(255,255,255,.12);color:#fff}
+    .main{padding:26px}.topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:24px}
+    .eyebrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--brand2);font-weight:700}
+    .panel,.metric{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 28px rgba(28,45,64,.06)}
+    .metric{padding:18px}.metric .value{font-size:1.55rem;font-weight:800}.metric .label{color:var(--muted);font-size:.84rem}
+    .panel{padding:20px}.section{display:none}.section.active{display:block}
+    .table> :not(caption)>*>*{padding:.85rem .75rem}.table thead th{font-size:.78rem;text-transform:uppercase;color:#718096;border-bottom:1px solid var(--line)}
+    .badge-soft{padding:.4rem .65rem;border-radius:999px;font-size:.75rem;font-weight:700}
+    .status-paid{background:#e8f7ee;color:#237545}.status-pending{background:#fff5df;color:#a66a0c}.status-partial{background:#edf4ff;color:#3566a8}.status-open{background:#fff0ef;color:#a84a3e}
+    .btn-brand{background:var(--brand);color:#fff;border:none}.btn-brand:hover{background:#0d2c45;color:#fff}
+    .btn-accent{background:var(--accent);border:none;color:#2f2515}.btn-accent:hover{background:#d69b47}
+    .form-control,.form-select{border-radius:11px;border-color:#dce3eb;padding:.7rem .8rem}
+    .modal-content{border:0;border-radius:18px}
+    .empty{text-align:center;color:var(--muted);padding:32px 10px}
+    .search{max-width:320px}
+    .money{font-variant-numeric:tabular-nums}
+    @media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{height:auto;position:relative}.sidebar nav{display:flex;overflow:auto;gap:6px}.nav-link{white-space:nowrap}.main{padding:16px}.topbar{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand mb-4">ZURIPO <small>Property Specialists · Property OS</small></div>
+    <nav id="mainNav">
+      <a class="nav-link" href="#overview" data-section="overview"><i class="bi bi-grid-1x2"></i>Overview</a>
+      <a class="nav-link" href="#properties" data-section="properties"><i class="bi bi-buildings"></i>Properties</a>
+      <a class="nav-link" href="#units" data-section="units"><i class="bi bi-door-open"></i>Units</a>
+      <a class="nav-link" href="#tenants" data-section="tenants"><i class="bi bi-people"></i>Tenants</a>
+      <a class="nav-link" href="#billing" data-section="billing"><i class="bi bi-receipt"></i>Billing</a>
+      <a class="nav-link" href="#payments" data-section="payments"><i class="bi bi-wallet2"></i>Payments</a>
+      <a class="nav-link" href="#maintenance" data-section="maintenance"><i class="bi bi-tools"></i>Maintenance</a>
+      <a class="nav-link" href="#reports" data-section="reports"><i class="bi bi-bar-chart"></i>Reports</a>
+      <hr class="border-light opacity-25">
+      <a class="nav-link" href="{{ url_for('dashboard') }}"><i class="bi bi-speedometer2"></i>Classic dashboard</a>
+      <a class="nav-link" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-left"></i>Logout</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="eyebrow">Property management workspace</div>
+        <h2 class="mb-1">Portfolio command center</h2>
+        <div class="text-muted">Occupancy, tenants, rent, payments and maintenance in one place.</div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-light border" onclick="loadAll()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+        <button class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#propertyModal"><i class="bi bi-plus-lg"></i> Add property</button>
+      </div>
+    </div>
+
+    <section id="overview" class="section">
+      <div class="row g-3 mb-3" id="metrics"></div>
+      <div class="row g-3">
+        <div class="col-lg-7"><div class="panel"><h5>Outstanding rent & invoices</h5><div id="overviewInvoices"></div></div></div>
+        <div class="col-lg-5"><div class="panel"><h5>Maintenance queue</h5><div id="overviewMaintenance"></div></div></div>
+      </div>
+    </section>
+
+    <section id="properties" class="section">
+      <div class="panel">
+        <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+          <div><h4 class="mb-1">Properties</h4><div class="text-muted">Portfolio, ownership, occupancy and fees.</div></div>
+          <input class="form-control search" id="propertySearch" placeholder="Search properties...">
+        </div>
+        <div id="propertiesTable"></div>
+      </div>
+    </section>
+
+    <section id="units" class="section">
+      <div class="panel">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+          <div><h4 class="mb-1">Units</h4><div class="text-muted">Track rent and vacancy across the portfolio.</div></div>
+          <button class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#unitModal"><i class="bi bi-plus-lg"></i> Add unit</button>
+        </div>
+        <div id="unitsTable"></div>
+      </div>
+    </section>
+
+    <section id="tenants" class="section">
+      <div class="panel">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+          <div><h4 class="mb-1">Tenants</h4><div class="text-muted">Current occupants and their assigned homes.</div></div>
+          <button class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#tenantModal"><i class="bi bi-person-plus"></i> Add tenant</button>
+        </div>
+        <div id="tenantsTable"></div>
+      </div>
+    </section>
+
+    <section id="billing" class="section">
+      <div class="panel">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+          <div><h4 class="mb-1">Billing & arrears</h4><div class="text-muted">Create rent invoices and monitor unpaid balances.</div></div>
+          <button class="btn btn-accent" data-bs-toggle="modal" data-bs-target="#invoiceModal"><i class="bi bi-receipt-cutoff"></i> Create invoice</button>
+        </div>
+        <div id="invoicesTable"></div>
+      </div>
+    </section>
+
+    <section id="payments" class="section">
+      <div class="panel">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+          <div><h4 class="mb-1">Payments</h4><div class="text-muted">Record cash, bank or M-Pesa collections against invoices.</div></div>
+          <button class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#paymentModal"><i class="bi bi-cash-coin"></i> Record payment</button>
+        </div>
+        <div id="paymentsTable"></div>
+      </div>
+    </section>
+
+    <section id="maintenance" class="section">
+      <div class="panel">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+          <div><h4 class="mb-1">Maintenance</h4><div class="text-muted">Requests, status and tenant/property context.</div></div>
+          <button class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#maintenanceModal"><i class="bi bi-tools"></i> New request</button>
+        </div>
+        <div id="maintenanceTable"></div>
+      </div>
+    </section>
+
+    <section id="reports" class="section">
+      <div class="row g-3" id="reportCards"></div>
+      <div class="panel mt-3">
+        <h5>Portfolio performance</h5>
+        <p class="text-muted mb-0">This first report view calculates live occupancy, billed revenue, collected revenue and arrears from the current database. The next production step is monthly trend history, landlord statements and exportable financial reports.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Property -->
+<div class="modal fade" id="propertyModal" tabindex="-1"><div class="modal-dialog modal-lg"><form class="modal-content" id="propertyForm">
+<div class="modal-header"><h5 class="modal-title">Add property</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body"><div class="row g-3">
+<div class="col-md-6"><label class="form-label">Property name</label><input class="form-control" name="name" required></div>
+<div class="col-md-6"><label class="form-label">Owner</label><input class="form-control" name="owner" required></div>
+<div class="col-md-6"><label class="form-label">Location</label><input class="form-control" name="location" required></div>
+<div class="col-md-3"><label class="form-label">Type</label><input class="form-control" name="property_type" placeholder="Apartment" required></div>
+<div class="col-md-3"><label class="form-label">Value / price</label><input class="form-control" type="number" name="price" required></div>
+<div class="col-md-3"><label class="form-label">Security fee</label><input class="form-control" type="number" name="security_fee" value="500"></div>
+<div class="col-md-3"><label class="form-label">Garbage fee</label><input class="form-control" type="number" name="garbage_fee" value="200"></div>
+<div class="col-12"><label class="form-label">Description</label><textarea class="form-control" name="description"></textarea></div>
+</div></div><div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-brand">Save property</button></div>
+</form></div></div>
+
+<!-- Unit -->
+<div class="modal fade" id="unitModal" tabindex="-1"><div class="modal-dialog"><form class="modal-content" id="unitForm">
+<div class="modal-header"><h5 class="modal-title">Add unit</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body"><div class="mb-3"><label class="form-label">Property</label><select class="form-select property-select" name="property_id" required></select></div>
+<div class="mb-3"><label class="form-label">Unit number</label><input class="form-control" name="unit_no" required></div>
+<div class="mb-3"><label class="form-label">Monthly rent (KSh)</label><input class="form-control" type="number" name="rent_price" required></div>
+<div><label class="form-label">Description</label><textarea class="form-control" name="description"></textarea></div></div>
+<div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-brand">Save unit</button></div>
+</form></div></div>
+
+<!-- Tenant -->
+<div class="modal fade" id="tenantModal" tabindex="-1"><div class="modal-dialog"><form class="modal-content" id="tenantForm">
+<div class="modal-header"><h5 class="modal-title">Add tenant</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body"><div class="mb-3"><label class="form-label">Full name</label><input class="form-control" name="name" required></div>
+<div class="row g-3"><div class="col-md-6"><label class="form-label">Email</label><input class="form-control" type="email" name="email" required></div><div class="col-md-6"><label class="form-label">Phone</label><input class="form-control" name="phone_no" required></div></div>
+<div class="mt-3"><label class="form-label">Property</label><select class="form-select property-select" id="tenantProperty" name="property_id" required></select></div>
+<div class="mt-3"><label class="form-label">Available unit</label><select class="form-select" id="tenantUnit" name="unit_no" required></select></div></div>
+<div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-brand">Add tenant</button></div>
+</form></div></div>
+
+<!-- Invoice -->
+<div class="modal fade" id="invoiceModal" tabindex="-1"><div class="modal-dialog"><form class="modal-content" id="invoiceForm">
+<div class="modal-header"><h5 class="modal-title">Create rent invoice</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body"><div class="mb-3"><label class="form-label">Tenant</label><select class="form-select tenant-select" name="tenant_id" required></select></div>
+<div class="mb-3"><label class="form-label">Water bill (KSh)</label><input class="form-control" type="number" name="water_bill" value="0" min="0"></div>
+<div><label class="form-label">Due date</label><input class="form-control" type="date" name="due_date"></div></div>
+<div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-accent">Generate invoice</button></div>
+</form></div></div>
+
+<!-- Payment -->
+<div class="modal fade" id="paymentModal" tabindex="-1"><div class="modal-dialog"><form class="modal-content" id="paymentForm">
+<div class="modal-header"><h5 class="modal-title">Record payment</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body"><div class="mb-3"><label class="form-label">Invoice</label><select class="form-select" id="paymentInvoice" name="invoice_id" required></select></div>
+<div class="mb-3"><label class="form-label">Amount paid</label><input class="form-control" type="number" name="amount_paid" min="1" required></div>
+<div class="mb-3"><label class="form-label">Method</label><select class="form-select" name="payment_method"><option>M-Pesa</option><option>Bank</option><option>Cash</option><option>Card</option></select></div>
+<div><label class="form-label">Transaction reference</label><input class="form-control" name="transaction_reference" placeholder="e.g. QAB12XYZ"></div></div>
+<div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-brand">Save payment</button></div>
+</form></div></div>
+
+<!-- Maintenance -->
+<div class="modal fade" id="maintenanceModal" tabindex="-1"><div class="modal-dialog"><form class="modal-content" id="maintenanceForm">
+<div class="modal-header"><h5 class="modal-title">New maintenance request</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body"><div class="mb-3"><label class="form-label">Tenant</label><select class="form-select tenant-select" name="tenant_id" required></select></div>
+<div class="mb-3"><label class="form-label">Description</label><textarea class="form-control" name="description" rows="4" required></textarea></div>
+<div><label class="form-label">Status</label><select class="form-select" name="status"><option>Pending</option><option>In Progress</option><option>Completed</option></select></div></div>
+<div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-brand">Create request</button></div>
+</form></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let store={summary:{},properties:[],units:[],tenants:[],invoices:[],receipts:[],maintenance:[]};
+const fmt=n=>'KSh '+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0});
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+async function get(url){const r=await fetch(url,{credentials:'same-origin'});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function send(url,method,data){const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(data)});const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.error||body.message||'Request failed');return body}
+function statusBadge(status){let c=status==='Paid'?'status-paid':status==='Partially Paid'?'status-partial':status==='Pending'?'status-pending':'status-open';return '<span class="badge-soft '+c+'">'+esc(status)+'</span>'}
+function showSection(){const hash=(location.hash||'#overview').slice(1);document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id===hash));document.querySelectorAll('[data-section]').forEach(x=>x.classList.toggle('active',x.dataset.section===hash))}
+window.addEventListener('hashchange',showSection);
+
+async function loadAll(){
+  try{
+    [store.summary,store.properties,store.units,store.tenants,store.invoices,store.receipts,store.maintenance]=await Promise.all([
+      get('/api/summary'),get('/properties'),get('/units'),get('/tenants'),get('/invoices'),get('/receipts'),get('/maintenance_requests')
+    ]);
+    renderAll(); populateSelects();
+  }catch(e){alert('Could not load workspace: '+e.message)}
+}
+function renderAll(){renderMetrics();renderProperties();renderUnits();renderTenants();renderInvoices();renderPayments();renderMaintenance();renderReports();renderOverview()}
+function renderMetrics(){
+  const s=store.summary; const data=[['Properties',s.properties,'buildings'],['Occupied',s.occupied_units,'house-check'],['Available',s.available_units,'door-open'],['Tenants',s.tenants,'people'],['Collected',fmt(s.total_paid),'cash-stack'],['Arrears',fmt(s.arrears),'exclamation-circle']];
+  metrics.innerHTML=data.map(x=>'<div class="col-6 col-md-4 col-xl-2"><div class="metric h-100"><div class="label"><i class="bi bi-'+x[2]+'"></i> '+x[0]+'</div><div class="value mt-1">'+x[1]+'</div></div></div>').join('');
+}
+function renderProperties(list=store.properties){
+  propertiesTable.innerHTML=list.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Property</th><th>Owner</th><th>Location</th><th>Units</th><th>Available</th><th>Fees</th></tr></thead><tbody>'+list.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong><br><small class="text-muted">'+esc(p.property_type)+'</small></td><td>'+esc(p.owner)+'</td><td>'+esc(p.location)+'</td><td>'+p.total_units+'</td><td>'+p.available_units+'</td><td>'+fmt((p.security_fee||0)+(p.garbage_fee||0))+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No properties yet.</div>';
+}
+function renderUnits(){
+  const names=Object.fromEntries(store.properties.map(p=>[p.id,p.name]));
+  unitsTable.innerHTML=store.units.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Unit</th><th>Property</th><th>Rent</th><th>Status</th><th>Tenant ID</th></tr></thead><tbody>'+store.units.map(u=>'<tr><td><strong>'+esc(u.unit_no)+'</strong></td><td>'+esc(names[u.property_id]||'—')+'</td><td>'+fmt(u.rent_price)+'</td><td>'+(u.available?'<span class="badge-soft status-paid">Available</span>':'<span class="badge-soft status-partial">Occupied</span>')+'</td><td>'+esc(u.tenant_id||'—')+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No units yet.</div>';
+}
+function renderTenants(){
+  tenantsTable.innerHTML=store.tenants.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Tenant</th><th>Contact</th><th>Property</th><th>Unit</th></tr></thead><tbody>'+store.tenants.map(t=>'<tr><td><strong>'+esc(t.name)+'</strong></td><td>'+esc(t.email)+'<br><small>'+esc(t.phone_no)+'</small></td><td>'+esc(t.property||'—')+'</td><td>'+esc(t.unit||'—')+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No tenants yet.</div>';
+}
+function renderInvoices(){
+  invoicesTable.innerHTML=store.invoices.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Invoice</th><th>Tenant</th><th>Issued</th><th>Due</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th></tr></thead><tbody>'+store.invoices.map(i=>'<tr><td>#'+i.id+'</td><td>'+esc(i.tenant_name||('Tenant '+i.tenant_id))+'</td><td>'+esc((i.issued_at||'').slice(0,10)||'—')+'</td><td>'+esc(i.due_date||'—')+'</td><td>'+fmt(i.total_amount)+'</td><td>'+fmt(i.amount_paid)+'</td><td><strong>'+fmt(i.balance_due)+'</strong></td><td>'+statusBadge(i.status)+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No invoices yet.</div>';
+}
+function renderPayments(){
+  paymentsTable.innerHTML=store.receipts.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Receipt</th><th>Tenant</th><th>Invoice</th><th>Amount</th><th>Method</th><th>Reference</th><th>Balance</th></tr></thead><tbody>'+store.receipts.map(r=>'<tr><td>#'+r.id+'</td><td>'+esc(r.tenant_name||'—')+'</td><td>#'+r.invoice_id+'</td><td>'+fmt(r.amount_paid)+'</td><td>'+esc(r.payment_method||'—')+'</td><td>'+esc(r.transaction_reference||'—')+'</td><td>'+fmt(r.balance_due)+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No payments yet.</div>';
+}
+function renderMaintenance(){
+  maintenanceTable.innerHTML=store.maintenance.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>ID</th><th>Tenant</th><th>Property / Unit</th><th>Description</th><th>Status</th><th></th></tr></thead><tbody>'+store.maintenance.map(m=>'<tr><td>#'+m.id+'</td><td>'+esc(m.tenant_name||'—')+'</td><td>'+esc(m.property_name||'—')+' / '+esc(m.unit_no||'—')+'</td><td>'+esc(m.description)+'</td><td>'+statusBadge(m.status)+'</td><td>'+(m.status!=='Completed'?'<button class="btn btn-sm btn-outline-success" onclick="completeMaintenance('+m.id+')">Complete</button>':'')+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No maintenance requests.</div>';
+}
+function renderReports(){
+  const s=store.summary, occ=s.units?Math.round((s.occupied_units/s.units)*100):0, collect=s.total_billed?Math.round((s.total_paid/s.total_billed)*100):0;
+  reportCards.innerHTML=[['Occupancy rate',occ+'%','Occupied units across the portfolio'],['Collection rate',collect+'%','Collected value versus invoices raised'],['Total billed',fmt(s.total_billed),'All invoice value'],['Arrears',fmt(s.arrears),'Outstanding invoice balance']].map(x=>'<div class="col-md-6 col-xl-3"><div class="metric h-100"><div class="label">'+x[0]+'</div><div class="value my-1">'+x[1]+'</div><small class="text-muted">'+x[2]+'</small></div></div>').join('');
+}
+function renderOverview(){
+  const open=store.invoices.filter(i=>i.status!=='Paid').slice(0,5);
+  overviewInvoices.innerHTML=open.length?open.map(i=>'<div class="d-flex justify-content-between border-bottom py-3"><div><strong>'+esc(i.tenant_name||'Tenant')+'</strong><br><small class="text-muted">Invoice #'+i.id+' · due '+esc(i.due_date||'not set')+'</small></div><div class="text-end"><strong>'+fmt(i.balance_due)+'</strong><br>'+statusBadge(i.status)+'</div></div>').join(''):'<div class="empty">Nothing outstanding.</div>';
+  const maint=store.maintenance.filter(m=>m.status!=='Completed').slice(0,5);
+  overviewMaintenance.innerHTML=maint.length?maint.map(m=>'<div class="border-bottom py-3"><div class="d-flex justify-content-between"><strong>'+esc(m.tenant_name||'Tenant')+'</strong>'+statusBadge(m.status)+'</div><small class="text-muted">'+esc(m.property_name||'')+' '+esc(m.unit_no||'')+'</small><div class="mt-1">'+esc(m.description)+'</div></div>').join(''):'<div class="empty">No open maintenance.</div>';
+}
+function populateSelects(){
+  document.querySelectorAll('.property-select').forEach(s=>s.innerHTML='<option value="">Choose property</option>'+store.properties.map(p=>'<option value="'+p.id+'">'+esc(p.name)+'</option>').join(''));
+  document.querySelectorAll('.tenant-select').forEach(s=>s.innerHTML='<option value="">Choose tenant</option>'+store.tenants.map(t=>'<option value="'+t.id+'">'+esc(t.name)+' · '+esc(t.unit||'No unit')+'</option>').join(''));
+  const open=store.invoices.filter(i=>Number(i.balance_due)>0);
+  paymentInvoice.innerHTML='<option value="">Choose invoice</option>'+open.map(i=>'<option value="'+i.id+'">#'+i.id+' · '+esc(i.tenant_name||'Tenant')+' · '+fmt(i.balance_due)+'</option>').join('');
+}
+propertySearch.addEventListener('input',e=>{const q=e.target.value.toLowerCase();renderProperties(store.properties.filter(p=>[p.name,p.owner,p.location,p.property_type].some(v=>String(v||'').toLowerCase().includes(q))))});
+tenantProperty.addEventListener('change',async e=>{tenantUnit.innerHTML='<option>Loading...</option>';if(!e.target.value)return;const units=await get('/properties/'+e.target.value+'/available_units');tenantUnit.innerHTML='<option value="">Choose unit</option>'+units.map(u=>'<option value="'+esc(u.unit_no)+'">'+esc(u.unit_no)+' · '+fmt(u.rent_price)+'</option>').join('')});
+function formData(form){return Object.fromEntries(new FormData(form).entries())}
+async function submitForm(id,url,method='POST',transform=x=>x){const f=document.getElementById(id);f.addEventListener('submit',async e=>{e.preventDefault();try{await send(url(formData(f)),method,transform(formData(f)));bootstrap.Modal.getInstance(f.closest('.modal')).hide();f.reset();await loadAll()}catch(err){alert(err.message)}})}
+submitForm('propertyForm',()=>'/properties');
+submitForm('unitForm',()=>'/units');
+submitForm('tenantForm',()=>'/tenants');
+submitForm('invoiceForm',d=>'/generate_invoice/'+d.tenant_id,'POST',d=>({water_bill:d.water_bill,due_date:d.due_date||null}));
+submitForm('paymentForm',()=>'/receipts');
+submitForm('maintenanceForm',()=>'/maintenance_requests');
+async function completeMaintenance(id){try{await send('/maintenance_requests/'+id,'PUT',{status:'Completed'});await loadAll()}catch(e){alert(e.message)}}
+showSection();loadAll();
+</script>
+</body>
+</html>
