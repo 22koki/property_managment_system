@@ -1,13 +1,16 @@
 import os
+import calendar
+import smtplib
+from email.message import EmailMessage
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_login import LoginManager, login_user, login_required, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from models import db, Property, Unit, Tenant, Invoice, MaintenanceRequest, Receipt, Admin
+from models import db, Property, Unit, Tenant, Tenancy, Invoice, MaintenanceRequest, Receipt, Admin
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-change-me-before-production")
@@ -52,6 +55,166 @@ def verify_admin_password(admin, password):
         return True
 
     return False
+
+
+def add_months(value, months=1):
+    month = value.month - 1 + months
+    year = value.year + month // 12
+    month = month % 12 + 1
+    day = min(value.day, calendar.monthrange(year, month)[1])
+    return date(year, month, day)
+
+
+def send_invoice_email(invoice):
+    """Send an invoice email when SMTP environment variables are configured."""
+    tenant = invoice.tenant
+    if not tenant or not tenant.email:
+        return False
+
+    host = os.getenv("SMTP_HOST")
+    username = os.getenv("SMTP_USERNAME")
+    password = os.getenv("SMTP_PASSWORD")
+    sender = os.getenv("SMTP_FROM", username)
+    port = int(os.getenv("SMTP_PORT", "587"))
+
+    if not all([host, username, password, sender]):
+        return False
+
+    msg = EmailMessage()
+    msg["Subject"] = f"Zuripo Invoice #{invoice.id} - {invoice.billing_period or 'Rent'}"
+    msg["From"] = sender
+    msg["To"] = tenant.email
+    msg.set_content(
+        f"Hello {tenant.name},\n\n"
+        f"Your {invoice.invoice_type.lower()} invoice has been generated.\n"
+        f"Amount due: KSh {invoice.total_amount:,.2f}\n"
+        f"Due date: {invoice.due_date.isoformat() if invoice.due_date else 'Not set'}\n"
+        f"Invoice number: {invoice.id}\n\n"
+        "Thank you,\nZuripo Property Specialists"
+    )
+
+    try:
+        with smtplib.SMTP(host, port, timeout=20) as smtp:
+            smtp.starttls()
+            smtp.login(username, password)
+            smtp.send_message(msg)
+        return True
+    except Exception as exc:
+        app.logger.warning("Invoice email failed for invoice %s: %s", invoice.id, exc)
+        return False
+
+
+def create_tenancy_invoice(tenancy, invoice_date=None, include_security=False, water_bill=0, invoice_type="Monthly Rent"):
+    invoice_date = invoice_date or date.today()
+    tenant = tenancy.tenant
+    unit = tenancy.unit
+    property_ = unit.property
+    billing_period = invoice_date.strftime("%Y-%m")
+
+    existing = Invoice.query.filter_by(
+        tenancy_id=tenancy.id,
+        billing_period=billing_period,
+        invoice_type=invoice_type,
+    ).first()
+    if existing:
+        return existing, False
+
+    security_fee = float(property_.security_fee or 0) if include_security else 0.0
+    rent = float(unit.rent_price or 0)
+    garbage = float(property_.garbage_fee or 0)
+    water = float(water_bill or 0)
+    due_date = invoice_date + timedelta(days=7)
+
+    invoice = Invoice(
+        tenant_id=tenant.id,
+        tenancy_id=tenancy.id,
+        rent=rent,
+        security_fee=security_fee,
+        garbage_fee=garbage,
+        water_bill=water,
+        total_amount=rent + security_fee + garbage + water,
+        status="Pending",
+        issued_at=datetime.combine(invoice_date, datetime.min.time()),
+        due_date=due_date,
+        billing_period=billing_period,
+        invoice_type=invoice_type,
+    )
+    db.session.add(invoice)
+    db.session.flush()
+    return invoice, True
+
+
+def assign_tenant_to_unit(tenant, unit, start_date=None, include_security=True):
+    start_date = start_date or date.today()
+
+    if not unit.available and unit.tenant_id != tenant.id:
+        raise ValueError("Selected unit is already occupied")
+
+    current = Tenancy.query.filter_by(tenant_id=tenant.id, active=True).first()
+    if current:
+        current.active = False
+        current.end_date = start_date
+        if current.unit:
+            current.unit.available = True
+            current.unit.tenant_id = None
+
+    unit.available = False
+    unit.tenant_id = tenant.id
+    tenant.property_id = unit.property_id
+
+    tenancy = Tenancy(
+        tenant_id=tenant.id,
+        unit_id=unit.id,
+        start_date=start_date,
+        active=True,
+        auto_invoice=True,
+        next_invoice_date=add_months(start_date, 1),
+        last_invoice_date=start_date,
+    )
+    db.session.add(tenancy)
+    db.session.flush()
+
+    invoice, created = create_tenancy_invoice(
+        tenancy,
+        invoice_date=start_date,
+        include_security=include_security,
+        invoice_type="Move-in" if include_security else "Monthly Rent",
+    )
+    db.session.commit()
+    if created:
+        send_invoice_email(invoice)
+    return tenancy, invoice
+
+
+def run_due_invoices(today=None):
+    today = today or date.today()
+    generated = []
+    tenancies = Tenancy.query.filter_by(active=True, auto_invoice=True).all()
+
+    for tenancy in tenancies:
+        while tenancy.next_invoice_date and tenancy.next_invoice_date <= today:
+            invoice_date = tenancy.next_invoice_date
+            invoice, created = create_tenancy_invoice(
+                tenancy,
+                invoice_date=invoice_date,
+                include_security=False,
+                invoice_type="Monthly Rent",
+            )
+            tenancy.last_invoice_date = invoice_date
+            tenancy.next_invoice_date = add_months(invoice_date, 1)
+            if created:
+                generated.append(invoice)
+
+    db.session.commit()
+    for invoice in generated:
+        send_invoice_email(invoice)
+    return generated
+
+
+@app.cli.command("billing-run")
+def billing_run():
+    generated = run_due_invoices()
+    print(f"Generated {len(generated)} invoice(s).")
 
 
 @app.route("/")
@@ -168,12 +331,14 @@ def maintenance_page():
 @app.route("/workspace")
 @login_required
 def workspace():
+    run_due_invoices()
     return render_template("workspace.html")
 
 
 @app.route("/api/summary")
 @login_required
 def api_summary():
+    run_due_invoices()
     total_billed = float(db.session.query(db.func.coalesce(db.func.sum(Invoice.total_amount), 0)).scalar() or 0)
     total_paid = float(db.session.query(db.func.coalesce(db.func.sum(Receipt.amount_paid), 0)).scalar() or 0)
     return jsonify({
@@ -432,6 +597,8 @@ def get_all_units():
             "available": unit.available,
             "property_id": unit.property_id,
             "tenant_id": unit.tenant_id,
+            "tenant_name": unit.tenant.name if unit.tenant else None,
+            "property_name": unit.property.name if unit.property else None,
         }
         for unit in units
     ])
@@ -509,11 +676,26 @@ def add_tenant():
     db.session.add(tenant)
     db.session.flush()
 
-    unit.available = False
-    unit.tenant_id = tenant.id
-    db.session.commit()
+    start_date = date.today()
+    if data.get("start_date"):
+        try:
+            start_date = datetime.strptime(data["start_date"], "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"error": "Invalid move-in date"}), 400
 
-    return jsonify({"message": "Tenant added successfully", "id": tenant.id}), 201
+    tenancy, invoice = assign_tenant_to_unit(
+        tenant,
+        unit,
+        start_date=start_date,
+        include_security=True,
+    )
+
+    return jsonify({
+        "message": "Tenant added and assigned successfully",
+        "id": tenant.id,
+        "tenancy_id": tenancy.id,
+        "invoice_id": invoice.id,
+    }), 201
 
 
 @app.route("/tenants", methods=["GET"])
@@ -529,8 +711,126 @@ def get_tenants():
             "unit_id": tenant.unit.id if tenant.unit else None,
             "property": tenant.property.name if tenant.property else None,
             "property_id": tenant.property_id,
+            "active_tenancy_id": next((x.id for x in tenant.tenancies if x.active), None),
+            "move_in_date": next((x.start_date.isoformat() for x in tenant.tenancies if x.active), None),
+            "next_invoice_date": next((x.next_invoice_date.isoformat() if x.next_invoice_date else None for x in tenant.tenancies if x.active), None),
+            "auto_invoice": next((x.auto_invoice for x in tenant.tenancies if x.active), False),
         }
         for tenant in tenants
+    ])
+
+
+@app.route("/tenants/<int:tenant_id>", methods=["PUT"])
+@login_required
+def update_tenant(tenant_id):
+    tenant = db.session.get(Tenant, tenant_id)
+    if not tenant:
+        return jsonify({"error": "Tenant not found"}), 404
+
+    data = request.get_json(silent=True) or {}
+    if "name" in data:
+        tenant.name = data["name"].strip()
+    if "email" in data:
+        existing = Tenant.query.filter(Tenant.email == data["email"], Tenant.id != tenant.id).first()
+        if existing:
+            return jsonify({"error": "Another tenant already uses this email"}), 409
+        tenant.email = data["email"].strip()
+    if "phone_no" in data:
+        tenant.phone_no = data["phone_no"].strip()
+
+    active = Tenancy.query.filter_by(tenant_id=tenant.id, active=True).first()
+    if active and "auto_invoice" in data:
+        active.auto_invoice = bool(data["auto_invoice"])
+
+    db.session.commit()
+    return jsonify({"message": "Tenant updated successfully"})
+
+
+@app.route("/tenants/<int:tenant_id>/assign", methods=["POST"])
+@login_required
+def assign_tenant(tenant_id):
+    tenant = db.session.get(Tenant, tenant_id)
+    if not tenant:
+        return jsonify({"error": "Tenant not found"}), 404
+
+    data = request.get_json(silent=True) or {}
+    unit = db.session.get(Unit, data.get("unit_id"))
+    if not unit:
+        return jsonify({"error": "Unit not found"}), 404
+
+    start_date = date.today()
+    if data.get("start_date"):
+        try:
+            start_date = datetime.strptime(data["start_date"], "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"error": "Invalid move date"}), 400
+
+    try:
+        tenancy, invoice = assign_tenant_to_unit(
+            tenant,
+            unit,
+            start_date=start_date,
+            include_security=bool(data.get("include_security_fee", False)),
+        )
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 409
+
+    return jsonify({
+        "message": "Tenant assignment updated",
+        "tenancy_id": tenancy.id,
+        "invoice_id": invoice.id,
+    })
+
+
+@app.route("/tenants/<int:tenant_id>/vacate", methods=["POST"])
+@login_required
+def vacate_tenant(tenant_id):
+    tenant = db.session.get(Tenant, tenant_id)
+    if not tenant:
+        return jsonify({"error": "Tenant not found"}), 404
+
+    active = Tenancy.query.filter_by(tenant_id=tenant.id, active=True).first()
+    if not active:
+        return jsonify({"error": "Tenant has no active tenancy"}), 400
+
+    data = request.get_json(silent=True) or {}
+    end_date = date.today()
+    if data.get("end_date"):
+        try:
+            end_date = datetime.strptime(data["end_date"], "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"error": "Invalid move-out date"}), 400
+
+    active.active = False
+    active.end_date = end_date
+    active.next_invoice_date = None
+    active.unit.available = True
+    active.unit.tenant_id = None
+    tenant.property_id = None
+    db.session.commit()
+
+    return jsonify({"message": "Tenant moved out and unit is now available"})
+
+
+@app.route("/tenancies", methods=["GET"])
+@login_required
+def get_tenancies():
+    rows = Tenancy.query.order_by(Tenancy.id.desc()).all()
+    return jsonify([
+        {
+            "id": row.id,
+            "tenant_id": row.tenant_id,
+            "tenant_name": row.tenant.name if row.tenant else None,
+            "unit_id": row.unit_id,
+            "unit_no": row.unit.unit_no if row.unit else None,
+            "property_name": row.unit.property.name if row.unit and row.unit.property else None,
+            "start_date": row.start_date.isoformat(),
+            "end_date": row.end_date.isoformat() if row.end_date else None,
+            "active": row.active,
+            "auto_invoice": row.auto_invoice,
+            "next_invoice_date": row.next_invoice_date.isoformat() if row.next_invoice_date else None,
+        }
+        for row in rows
     ])
 
 
@@ -591,6 +891,9 @@ def get_invoices():
             "due_date": invoice.due_date.isoformat() if invoice.due_date else None,
             "amount_paid": float(sum(r.amount_paid for r in invoice.receipts)),
             "balance_due": max(float(invoice.total_amount) - float(sum(r.amount_paid for r in invoice.receipts)), 0),
+            "billing_period": invoice.billing_period,
+            "invoice_type": invoice.invoice_type,
+            "tenancy_id": invoice.tenancy_id,
         }
         for invoice in invoices
     ])
