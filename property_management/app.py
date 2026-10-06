@@ -68,7 +68,7 @@ def login():
 
         if admin and verify_admin_password(admin, password):
             login_user(admin)
-            return redirect(url_for("dashboard"))
+            return redirect(url_for("workspace"))
 
         flash("Invalid credentials", "danger")
 
