@@ -108,43 +108,43 @@ def dashboard():
 @app.route("/properties-page")
 @login_required
 def properties_page():
-    return redirect(url_for("workspace", section="properties"))
+    return redirect(url_for("workspace") + "#properties")
 
 
 @app.route("/add-property")
 @login_required
 def add_property_page():
-    return render_template("add_propert.html")
+    return redirect(url_for("workspace") + "#properties")
 
 
 @app.route("/add-unit")
 @login_required
 def add_unit_page():
-    return render_template("add_unit.html")
+    return redirect(url_for("workspace") + "#units")
 
 
 @app.route("/add-tenant")
 @login_required
 def add_tenant_page():
-    return render_template("add_tenant.html")
+    return redirect(url_for("workspace") + "#tenants")
 
 
 @app.route("/tenants-page")
 @login_required
 def tenants_page():
-    return redirect(url_for("workspace", section="tenants"))
+    return redirect(url_for("workspace") + "#tenants")
 
 
 @app.route("/invoice")
 @login_required
 def invoice_page():
-    return redirect(url_for("workspace", section="billing"))
+    return redirect(url_for("workspace") + "#billing")
 
 
 @app.route("/receipts-page")
 @login_required
 def receipts_page():
-    return redirect(url_for("workspace", section="payments"))
+    return redirect(url_for("workspace") + "#payments")
 
 
 @app.route("/statement")
@@ -162,7 +162,7 @@ def bills_page():
 @app.route("/maintenance")
 @login_required
 def maintenance_page():
-    return redirect(url_for("workspace", section="maintenance"))
+    return redirect(url_for("workspace") + "#maintenance")
 
 
 @app.route("/workspace")
