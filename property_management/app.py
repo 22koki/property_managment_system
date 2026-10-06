@@ -378,9 +378,11 @@ def generate_invoice(tenant_id):
     except (TypeError, ValueError):
         return jsonify({"success": False, "message": "Invalid water bill"}), 400
 
+    include_security = bool(payload.get("include_security_fee", False))
+    security_fee = float(property_.security_fee or 0) if include_security else 0.0
     total_amount = (
         float(unit.rent_price)
-        + float(property_.security_fee)
+        + security_fee
         + float(property_.garbage_fee)
         + water_bill
     )
@@ -395,15 +397,19 @@ def generate_invoice(tenant_id):
     invoice = Invoice(
         tenant_id=tenant.id,
         rent=unit.rent_price,
-        security_fee=property_.security_fee,
+        security_fee=security_fee,
         garbage_fee=property_.garbage_fee,
         water_bill=water_bill,
         total_amount=total_amount,
         status="Pending",
         due_date=due_date,
+        tenancy_id=next((x.id for x in tenant.tenancies if x.active), None),
+        billing_period=date.today().strftime("%Y-%m"),
+        invoice_type="Manual Invoice",
     )
     db.session.add(invoice)
     db.session.commit()
+    email_sent = send_invoice_email(invoice)
 
     return jsonify({
         "success": True,
@@ -419,6 +425,7 @@ def generate_invoice(tenant_id):
             "status": invoice.status,
             "issued_at": invoice.issued_at.isoformat() if invoice.issued_at else None,
             "due_date": invoice.due_date.isoformat() if invoice.due_date else None,
+            "email_sent": email_sent,
         },
     }), 201
 
@@ -565,10 +572,26 @@ def update_unit(unit_id):
         return jsonify({"error": "Unit not found"}), 404
 
     data = request.get_json(silent=True) or {}
-    unit.unit_no = data.get("unit_no", unit.unit_no)
-    unit.rent_price = float(data.get("rent_price", unit.rent_price))
-    unit.description = data.get("description", unit.description)
-    unit.available = data.get("available", unit.available)
+
+    if "unit_no" in data and data["unit_no"] != unit.unit_no:
+        duplicate = Unit.query.filter(Unit.unit_no == data["unit_no"], Unit.id != unit.id).first()
+        if duplicate:
+            return jsonify({"error": "Unit number already exists"}), 409
+        unit.unit_no = data["unit_no"]
+
+    if "rent_price" in data:
+        unit.rent_price = float(data["rent_price"])
+    if "description" in data:
+        unit.description = data["description"]
+
+    if "property_id" in data and int(data["property_id"]) != unit.property_id:
+        if not unit.available:
+            return jsonify({"error": "Vacate the unit before moving it to another property"}), 409
+        property_ = db.session.get(Property, int(data["property_id"]))
+        if not property_:
+            return jsonify({"error": "Property not found"}), 404
+        unit.property_id = property_.id
+
     db.session.commit()
     return jsonify({"message": "Unit updated successfully"})
 
@@ -864,6 +887,17 @@ def vacate_unit(unit_no):
         return jsonify({"error": "Unit not found"}), 404
     if unit.available:
         return jsonify({"error": "Unit is already available"}), 400
+
+    tenant_id = unit.tenant_id
+    if tenant_id:
+        active = Tenancy.query.filter_by(tenant_id=tenant_id, unit_id=unit.id, active=True).first()
+        if active:
+            active.active = False
+            active.end_date = date.today()
+            active.next_invoice_date = None
+        tenant = db.session.get(Tenant, tenant_id)
+        if tenant:
+            tenant.property_id = None
 
     unit.available = True
     unit.tenant_id = None
