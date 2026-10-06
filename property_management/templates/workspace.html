@@ -177,8 +177,60 @@
 <div class="modal-body"><div class="mb-3"><label class="form-label">Full name</label><input class="form-control" name="name" required></div>
 <div class="row g-3"><div class="col-md-6"><label class="form-label">Email</label><input class="form-control" type="email" name="email" required></div><div class="col-md-6"><label class="form-label">Phone</label><input class="form-control" name="phone_no" required></div></div>
 <div class="mt-3"><label class="form-label">Property</label><select class="form-select property-select" id="tenantProperty" name="property_id" required></select></div>
-<div class="mt-3"><label class="form-label">Available unit</label><select class="form-select" id="tenantUnit" name="unit_no" required></select></div></div>
+<div class="mt-3"><label class="form-label">Available unit</label><select class="form-select" id="tenantUnit" name="unit_no" required></select></div>
+<div class="mt-3"><label class="form-label">Move-in date</label><input class="form-control" type="date" id="tenantStartDate" name="start_date" required></div>
+<div class="alert alert-light border mt-3 mb-0 small"><i class="bi bi-lightning-charge"></i> A move-in invoice will be created immediately. Monthly rent invoices will then be generated automatically every month.</div></div>
 <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-brand">Add tenant</button></div>
+</form></div></div>
+
+
+<!-- Edit Property -->
+<div class="modal fade" id="editPropertyModal" tabindex="-1"><div class="modal-dialog modal-lg"><form class="modal-content" id="editPropertyForm">
+<div class="modal-header"><h5 class="modal-title">Edit property</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body"><input type="hidden" name="id"><div class="row g-3">
+<div class="col-md-6"><label class="form-label">Property name</label><input class="form-control" name="name" required></div>
+<div class="col-md-6"><label class="form-label">Owner</label><input class="form-control" name="owner" required></div>
+<div class="col-md-6"><label class="form-label">Location</label><input class="form-control" name="location" required></div>
+<div class="col-md-3"><label class="form-label">Type</label><input class="form-control" name="property_type" required></div>
+<div class="col-md-3"><label class="form-label">Value / price</label><input class="form-control" type="number" name="price" required></div>
+<div class="col-md-3"><label class="form-label">Security fee</label><input class="form-control" type="number" name="security_fee"></div>
+<div class="col-md-3"><label class="form-label">Garbage fee</label><input class="form-control" type="number" name="garbage_fee"></div>
+<div class="col-12"><label class="form-label">Description</label><textarea class="form-control" name="description"></textarea></div>
+</div></div><div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-brand">Save changes</button></div>
+</form></div></div>
+
+<!-- Edit Unit -->
+<div class="modal fade" id="editUnitModal" tabindex="-1"><div class="modal-dialog"><form class="modal-content" id="editUnitForm">
+<div class="modal-header"><h5 class="modal-title">Edit unit</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body"><input type="hidden" name="id">
+<div class="mb-3"><label class="form-label">Property</label><select class="form-select property-select" name="property_id" required></select></div>
+<div class="mb-3"><label class="form-label">Unit number</label><input class="form-control" name="unit_no" required></div>
+<div class="mb-3"><label class="form-label">Monthly rent (KSh)</label><input class="form-control" type="number" name="rent_price" required></div>
+<div><label class="form-label">Description</label><textarea class="form-control" name="description"></textarea></div></div>
+<div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-brand">Save changes</button></div>
+</form></div></div>
+
+<!-- Edit Tenant -->
+<div class="modal fade" id="editTenantModal" tabindex="-1"><div class="modal-dialog"><form class="modal-content" id="editTenantForm">
+<div class="modal-header"><h5 class="modal-title">Edit tenant</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body"><input type="hidden" name="id">
+<div class="mb-3"><label class="form-label">Full name</label><input class="form-control" name="name" required></div>
+<div class="mb-3"><label class="form-label">Email</label><input class="form-control" type="email" name="email" required></div>
+<div class="mb-3"><label class="form-label">Phone</label><input class="form-control" name="phone_no" required></div>
+<div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="editAutoInvoice" name="auto_invoice"><label class="form-check-label" for="editAutoInvoice">Automatic monthly invoicing</label></div>
+</div><div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-brand">Save tenant</button></div>
+</form></div></div>
+
+<!-- Assign / Move Tenant -->
+<div class="modal fade" id="moveTenantModal" tabindex="-1"><div class="modal-dialog"><form class="modal-content" id="moveTenantForm">
+<div class="modal-header"><h5 class="modal-title">Assign / move tenant</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body"><input type="hidden" name="tenant_id">
+<div class="mb-3"><label class="form-label">Tenant</label><input class="form-control" id="moveTenantName" disabled></div>
+<div class="mb-3"><label class="form-label">New available unit</label><select class="form-select" id="moveUnit" name="unit_id" required></select></div>
+<div class="mb-3"><label class="form-label">Move date</label><input class="form-control" type="date" id="moveStartDate" name="start_date" required></div>
+<div class="form-check"><input class="form-check-input" type="checkbox" id="moveSecurity" name="include_security_fee"><label class="form-check-label" for="moveSecurity">Charge security/deposit on this move</label></div>
+<div class="alert alert-light border mt-3 mb-0 small">The old unit will be freed automatically and its tenancy history will be preserved.</div>
+</div><div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-brand">Confirm assignment</button></div>
 </form></div></div>
 
 <!-- Invoice -->
@@ -234,17 +286,17 @@ function renderMetrics(){
   metrics.innerHTML=data.map(x=>'<div class="col-6 col-md-4 col-xl-2"><div class="metric h-100"><div class="label"><i class="bi bi-'+x[2]+'"></i> '+x[0]+'</div><div class="value mt-1">'+x[1]+'</div></div></div>').join('');
 }
 function renderProperties(list=store.properties){
-  propertiesTable.innerHTML=list.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Property</th><th>Owner</th><th>Location</th><th>Units</th><th>Available</th><th>Fees</th></tr></thead><tbody>'+list.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong><br><small class="text-muted">'+esc(p.property_type)+'</small></td><td>'+esc(p.owner)+'</td><td>'+esc(p.location)+'</td><td>'+p.total_units+'</td><td>'+p.available_units+'</td><td>'+fmt((p.security_fee||0)+(p.garbage_fee||0))+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No properties yet.</div>';
+  propertiesTable.innerHTML=list.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Property</th><th>Owner</th><th>Location</th><th>Units</th><th>Available</th><th>Fees</th><th></th></tr></thead><tbody>'+list.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong><br><small class="text-muted">'+esc(p.property_type)+'</small></td><td>'+esc(p.owner)+'</td><td>'+esc(p.location)+'</td><td>'+p.total_units+'</td><td>'+p.available_units+'</td><td>'+fmt((p.security_fee||0)+(p.garbage_fee||0))+'</td><td><button class="btn btn-sm btn-outline-primary" onclick="openEditProperty('+p.id+')"><i class="bi bi-pencil"></i> Edit</button></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No properties yet.</div>';
 }
 function renderUnits(){
   const names=Object.fromEntries(store.properties.map(p=>[p.id,p.name]));
-  unitsTable.innerHTML=store.units.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Unit</th><th>Property</th><th>Rent</th><th>Status</th><th>Tenant ID</th></tr></thead><tbody>'+store.units.map(u=>'<tr><td><strong>'+esc(u.unit_no)+'</strong></td><td>'+esc(names[u.property_id]||'—')+'</td><td>'+fmt(u.rent_price)+'</td><td>'+(u.available?'<span class="badge-soft status-paid">Available</span>':'<span class="badge-soft status-partial">Occupied</span>')+'</td><td>'+esc(u.tenant_id||'—')+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No units yet.</div>';
+  unitsTable.innerHTML=store.units.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Unit</th><th>Property</th><th>Rent</th><th>Status</th><th>Tenant</th><th></th></tr></thead><tbody>'+store.units.map(u=>'<tr><td><strong>'+esc(u.unit_no)+'</strong></td><td>'+esc(names[u.property_id]||u.property_name||'—')+'</td><td>'+fmt(u.rent_price)+'</td><td>'+(u.available?'<span class="badge-soft status-paid">Available</span>':'<span class="badge-soft status-partial">Occupied</span>')+'</td><td>'+esc(u.tenant_name||'—')+'</td><td><button class="btn btn-sm btn-outline-primary" onclick="openEditUnit('+u.id+')"><i class="bi bi-pencil"></i> Edit</button></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No units yet.</div>';
 }
 function renderTenants(){
-  tenantsTable.innerHTML=store.tenants.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Tenant</th><th>Contact</th><th>Property</th><th>Unit</th></tr></thead><tbody>'+store.tenants.map(t=>'<tr><td><strong>'+esc(t.name)+'</strong></td><td>'+esc(t.email)+'<br><small>'+esc(t.phone_no)+'</small></td><td>'+esc(t.property||'—')+'</td><td>'+esc(t.unit||'—')+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No tenants yet.</div>';
+  tenantsTable.innerHTML=store.tenants.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Tenant</th><th>Contact</th><th>Property</th><th>Unit</th><th>Next invoice</th><th>Actions</th></tr></thead><tbody>'+store.tenants.map(t=>'<tr><td><strong>'+esc(t.name)+'</strong><br><small class="text-muted">'+(t.auto_invoice?'Auto billing on':'Auto billing off')+'</small></td><td>'+esc(t.email)+'<br><small>'+esc(t.phone_no)+'</small></td><td>'+esc(t.property||'—')+'</td><td>'+esc(t.unit||'Vacated')+'</td><td>'+esc(t.next_invoice_date||'—')+'</td><td class="text-nowrap"><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditTenant('+t.id+')"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-outline-secondary me-1" onclick="openMoveTenant('+t.id+')"><i class="bi bi-arrow-left-right"></i> '+(t.unit?'Move':'Assign')+'</button>'+(t.unit?'<button class="btn btn-sm btn-outline-danger" onclick="vacateTenant('+t.id+')"><i class="bi bi-box-arrow-right"></i> Vacate</button>':'')+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No tenants yet.</div>';
 }
 function renderInvoices(){
-  invoicesTable.innerHTML=store.invoices.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Invoice</th><th>Tenant</th><th>Issued</th><th>Due</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th></tr></thead><tbody>'+store.invoices.map(i=>'<tr><td>#'+i.id+'</td><td>'+esc(i.tenant_name||('Tenant '+i.tenant_id))+'</td><td>'+esc((i.issued_at||'').slice(0,10)||'—')+'</td><td>'+esc(i.due_date||'—')+'</td><td>'+fmt(i.total_amount)+'</td><td>'+fmt(i.amount_paid)+'</td><td><strong>'+fmt(i.balance_due)+'</strong></td><td>'+statusBadge(i.status)+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No invoices yet.</div>';
+  invoicesTable.innerHTML=store.invoices.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Invoice</th><th>Tenant</th><th>Type</th><th>Period</th><th>Due</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th></tr></thead><tbody>'+store.invoices.map(i=>'<tr><td>#'+i.id+'</td><td>'+esc(i.tenant_name||('Tenant '+i.tenant_id))+'</td><td>'+esc(i.invoice_type||'Invoice')+'</td><td>'+esc(i.billing_period||'—')+'</td><td>'+esc(i.due_date||'—')+'</td><td>'+fmt(i.total_amount)+'</td><td>'+fmt(i.amount_paid)+'</td><td><strong>'+fmt(i.balance_due)+'</strong></td><td>'+statusBadge(i.status)+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No invoices yet.</div>';
 }
 function renderPayments(){
   paymentsTable.innerHTML=store.receipts.length?'<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Receipt</th><th>Tenant</th><th>Invoice</th><th>Amount</th><th>Method</th><th>Reference</th><th>Balance</th></tr></thead><tbody>'+store.receipts.map(r=>'<tr><td>#'+r.id+'</td><td>'+esc(r.tenant_name||'—')+'</td><td>#'+r.invoice_id+'</td><td>'+fmt(r.amount_paid)+'</td><td>'+esc(r.payment_method||'—')+'</td><td>'+esc(r.transaction_reference||'—')+'</td><td>'+fmt(r.balance_due)+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No payments yet.</div>';
@@ -262,6 +314,37 @@ function renderOverview(){
   const maint=store.maintenance.filter(m=>m.status!=='Completed').slice(0,5);
   overviewMaintenance.innerHTML=maint.length?maint.map(m=>'<div class="border-bottom py-3"><div class="d-flex justify-content-between"><strong>'+esc(m.tenant_name||'Tenant')+'</strong>'+statusBadge(m.status)+'</div><small class="text-muted">'+esc(m.property_name||'')+' '+esc(m.unit_no||'')+'</small><div class="mt-1">'+esc(m.description)+'</div></div>').join(''):'<div class="empty">No open maintenance.</div>';
 }
+
+function openEditProperty(id){
+  const p=store.properties.find(x=>x.id===id); if(!p)return;
+  const f=editPropertyForm;
+  ['id','name','owner','location','property_type','price','security_fee','garbage_fee','description'].forEach(k=>{if(f.elements[k])f.elements[k].value=p[k]??''});
+  bootstrap.Modal.getOrCreateInstance(editPropertyModal).show();
+}
+function openEditUnit(id){
+  const u=store.units.find(x=>x.id===id); if(!u)return;
+  const f=editUnitForm;
+  f.elements.id.value=u.id; f.elements.property_id.value=u.property_id; f.elements.unit_no.value=u.unit_no; f.elements.rent_price.value=u.rent_price; f.elements.description.value=u.description||'';
+  bootstrap.Modal.getOrCreateInstance(editUnitModal).show();
+}
+function openEditTenant(id){
+  const t=store.tenants.find(x=>x.id===id); if(!t)return;
+  const f=editTenantForm;
+  f.elements.id.value=t.id; f.elements.name.value=t.name; f.elements.email.value=t.email; f.elements.phone_no.value=t.phone_no; editAutoInvoice.checked=!!t.auto_invoice;
+  bootstrap.Modal.getOrCreateInstance(editTenantModal).show();
+}
+function openMoveTenant(id){
+  const t=store.tenants.find(x=>x.id===id); if(!t)return;
+  moveTenantForm.elements.tenant_id.value=t.id; moveTenantName.value=t.name; moveStartDate.value=new Date().toISOString().slice(0,10); moveSecurity.checked=false;
+  const available=store.units.filter(u=>u.available);
+  moveUnit.innerHTML='<option value="">Choose available unit</option>'+available.map(u=>'<option value="'+u.id+'">'+esc(u.property_name||'Property')+' · '+esc(u.unit_no)+' · '+fmt(u.rent_price)+'</option>').join('');
+  bootstrap.Modal.getOrCreateInstance(moveTenantModal).show();
+}
+async function vacateTenant(id){
+  const t=store.tenants.find(x=>x.id===id); if(!t)return;
+  if(!confirm('Move '+t.name+' out of '+(t.unit||'their unit')+'? The unit will become available and future auto-invoices will stop.'))return;
+  try{await send('/tenants/'+id+'/vacate','POST',{});await loadAll()}catch(e){alert(e.message)}
+}
 function populateSelects(){
   document.querySelectorAll('.property-select').forEach(s=>s.innerHTML='<option value="">Choose property</option>'+store.properties.map(p=>'<option value="'+p.id+'">'+esc(p.name)+'</option>').join(''));
   document.querySelectorAll('.tenant-select').forEach(s=>s.innerHTML='<option value="">Choose tenant</option>'+store.tenants.map(t=>'<option value="'+t.id+'">'+esc(t.name)+' · '+esc(t.unit||'No unit')+'</option>').join(''));
@@ -277,8 +360,15 @@ submitForm('unitForm',()=>'/units');
 submitForm('tenantForm',()=>'/tenants');
 submitForm('invoiceForm',d=>'/generate_invoice/'+d.tenant_id,'POST',d=>({water_bill:d.water_bill,due_date:d.due_date||null}));
 submitForm('paymentForm',()=>'/receipts');
+
 submitForm('maintenanceForm',()=>'/maintenance_requests');
+editPropertyForm.addEventListener('submit',async e=>{e.preventDefault();const d=formData(editPropertyForm);try{await send('/properties/'+d.id,'PUT',d);bootstrap.Modal.getInstance(editPropertyModal).hide();await loadAll()}catch(err){alert(err.message)}});
+editUnitForm.addEventListener('submit',async e=>{e.preventDefault();const d=formData(editUnitForm);try{await send('/units/'+d.id,'PUT',d);bootstrap.Modal.getInstance(editUnitModal).hide();await loadAll()}catch(err){alert(err.message)}});
+editTenantForm.addEventListener('submit',async e=>{e.preventDefault();const d=formData(editTenantForm);d.auto_invoice=editAutoInvoice.checked;try{await send('/tenants/'+d.id,'PUT',d);bootstrap.Modal.getInstance(editTenantModal).hide();await loadAll()}catch(err){alert(err.message)}});
+moveTenantForm.addEventListener('submit',async e=>{e.preventDefault();const d=formData(moveTenantForm);d.include_security_fee=moveSecurity.checked;try{await send('/tenants/'+d.tenant_id+'/assign','POST',d);bootstrap.Modal.getInstance(moveTenantModal).hide();await loadAll()}catch(err){alert(err.message)}});
+
 async function completeMaintenance(id){try{await send('/maintenance_requests/'+id,'PUT',{status:'Completed'});await loadAll()}catch(e){alert(e.message)}}
+tenantStartDate.value=new Date().toISOString().slice(0,10);
 showSection();loadAll();
 </script>
 </body>
