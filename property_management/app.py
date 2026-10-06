@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash
+from datetime import datetime
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_login import LoginManager, login_user, login_required, logout_user
@@ -89,6 +90,12 @@ def dashboard():
     recent_invoices = Invoice.query.order_by(Invoice.id.desc()).limit(5).all()
     recent_maintenance = MaintenanceRequest.query.order_by(MaintenanceRequest.id.desc()).limit(5).all()
 
+    total_billed = db.session.query(db.func.coalesce(db.func.sum(Invoice.total_amount), 0)).scalar()
+    total_paid = db.session.query(db.func.coalesce(db.func.sum(Receipt.amount_paid), 0)).scalar()
+    stats["total_billed"] = float(total_billed or 0)
+    stats["total_paid"] = float(total_paid or 0)
+    stats["arrears"] = max(stats["total_billed"] - stats["total_paid"], 0)
+
     return render_template(
         "dashboard.html",
         stats=stats,
@@ -101,43 +108,43 @@ def dashboard():
 @app.route("/properties-page")
 @login_required
 def properties_page():
-    return render_template("view_properties.html")
+    return redirect(url_for("workspace") + "#properties")
 
 
 @app.route("/add-property")
 @login_required
 def add_property_page():
-    return render_template("add_propert.html")
+    return redirect(url_for("workspace") + "#properties")
 
 
 @app.route("/add-unit")
 @login_required
 def add_unit_page():
-    return render_template("add_unit.html")
+    return redirect(url_for("workspace") + "#units")
 
 
 @app.route("/add-tenant")
 @login_required
 def add_tenant_page():
-    return render_template("add_tenant.html")
+    return redirect(url_for("workspace") + "#tenants")
 
 
 @app.route("/tenants-page")
 @login_required
 def tenants_page():
-    return render_template("view_tenants.html")
+    return redirect(url_for("workspace") + "#tenants")
 
 
 @app.route("/invoice")
 @login_required
 def invoice_page():
-    return render_template("invoice.html")
+    return redirect(url_for("workspace") + "#billing")
 
 
 @app.route("/receipts-page")
 @login_required
 def receipts_page():
-    return render_template("receipts.html")
+    return redirect(url_for("workspace") + "#payments")
 
 
 @app.route("/statement")
@@ -155,7 +162,32 @@ def bills_page():
 @app.route("/maintenance")
 @login_required
 def maintenance_page():
-    return render_template("maintenance_requests.html")
+    return redirect(url_for("workspace") + "#maintenance")
+
+
+@app.route("/workspace")
+@login_required
+def workspace():
+    return render_template("workspace.html")
+
+
+@app.route("/api/summary")
+@login_required
+def api_summary():
+    total_billed = float(db.session.query(db.func.coalesce(db.func.sum(Invoice.total_amount), 0)).scalar() or 0)
+    total_paid = float(db.session.query(db.func.coalesce(db.func.sum(Receipt.amount_paid), 0)).scalar() or 0)
+    return jsonify({
+        "properties": Property.query.count(),
+        "units": Unit.query.count(),
+        "available_units": Unit.query.filter_by(available=True).count(),
+        "occupied_units": Unit.query.filter_by(available=False).count(),
+        "tenants": Tenant.query.count(),
+        "open_invoices": Invoice.query.filter(Invoice.status != "Paid").count(),
+        "maintenance_open": MaintenanceRequest.query.filter(MaintenanceRequest.status != "Completed").count(),
+        "total_billed": total_billed,
+        "total_paid": total_paid,
+        "arrears": max(total_billed - total_paid, 0),
+    })
 
 
 @app.route("/generate_invoice/<int:tenant_id>", methods=["POST"])
@@ -188,6 +220,13 @@ def generate_invoice(tenant_id):
         + water_bill
     )
 
+    due_date = None
+    if payload.get("due_date"):
+        try:
+            due_date = datetime.strptime(payload["due_date"], "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"success": False, "message": "Invalid due date"}), 400
+
     invoice = Invoice(
         tenant_id=tenant.id,
         rent=unit.rent_price,
@@ -196,6 +235,7 @@ def generate_invoice(tenant_id):
         water_bill=water_bill,
         total_amount=total_amount,
         status="Pending",
+        due_date=due_date,
     )
     db.session.add(invoice)
     db.session.commit()
@@ -212,6 +252,8 @@ def generate_invoice(tenant_id):
             "garbage_fee": invoice.garbage_fee,
             "total_amount": invoice.total_amount,
             "status": invoice.status,
+            "issued_at": invoice.issued_at.isoformat() if invoice.issued_at else None,
+            "due_date": invoice.due_date.isoformat() if invoice.due_date else None,
         },
     }), 201
 
@@ -544,6 +586,11 @@ def get_invoices():
             "water_bill": invoice.water_bill,
             "total_amount": invoice.total_amount,
             "status": invoice.status,
+            "tenant_name": invoice.tenant.name if invoice.tenant else None,
+            "issued_at": invoice.issued_at.isoformat() if invoice.issued_at else None,
+            "due_date": invoice.due_date.isoformat() if invoice.due_date else None,
+            "amount_paid": float(sum(r.amount_paid for r in invoice.receipts)),
+            "balance_due": max(float(invoice.total_amount) - float(sum(r.amount_paid for r in invoice.receipts)), 0),
         }
         for invoice in invoices
     ])
@@ -559,6 +606,10 @@ def get_receipts():
             "invoice_id": receipt.invoice_id,
             "amount_paid": receipt.amount_paid,
             "balance_due": receipt.balance_due,
+            "payment_method": receipt.payment_method,
+            "transaction_reference": receipt.transaction_reference,
+            "created_at": receipt.created_at.isoformat() if receipt.created_at else None,
+            "tenant_name": receipt.invoice.tenant.name if receipt.invoice and receipt.invoice.tenant else None,
         }
         for receipt in receipts
     ])
@@ -594,6 +645,8 @@ def create_receipt():
         invoice_id=invoice.id,
         amount_paid=amount_paid,
         balance_due=balance_due,
+        payment_method=data.get("payment_method", "Cash"),
+        transaction_reference=data.get("transaction_reference"),
     )
     db.session.add(receipt)
 
@@ -608,6 +661,8 @@ def create_receipt():
             "amount_paid": receipt.amount_paid,
             "balance_due": receipt.balance_due,
             "invoice_status": invoice.status,
+            "payment_method": receipt.payment_method,
+            "transaction_reference": receipt.transaction_reference,
         },
     }), 201
 
@@ -623,6 +678,10 @@ def get_maintenance_requests():
             "tenant_id": item.tenant_id,
             "description": item.description,
             "status": item.status,
+            "tenant_name": item.tenant.name if item.tenant else None,
+            "property_name": item.tenant.property.name if item.tenant and item.tenant.property else None,
+            "unit_no": item.tenant.unit.unit_no if item.tenant and item.tenant.unit else None,
+            "created_at": item.created_at.isoformat() if item.created_at else None,
         }
         for item in requests_
     ])
