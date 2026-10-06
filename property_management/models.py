@@ -1,6 +1,8 @@
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
 from datetime import datetime
+
+from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
+
 
 db = SQLAlchemy()
 
@@ -39,9 +41,28 @@ class Tenant(db.Model):
     unit = db.relationship("Unit", backref="tenant", uselist=False)
 
 
+class Tenancy(db.Model):
+    """History of tenant move-ins, moves and move-outs."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey("tenant.id"), nullable=False)
+    unit_id = db.Column(db.Integer, db.ForeignKey("unit.id"), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=True)
+    active = db.Column(db.Boolean, nullable=False, default=True)
+    auto_invoice = db.Column(db.Boolean, nullable=False, default=True)
+    next_invoice_date = db.Column(db.Date, nullable=True)
+    last_invoice_date = db.Column(db.Date, nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    tenant = db.relationship("Tenant", backref="tenancies")
+    unit = db.relationship("Unit", backref="tenancies")
+
+
 class Invoice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tenant_id = db.Column(db.Integer, db.ForeignKey("tenant.id"), nullable=False)
+    tenancy_id = db.Column(db.Integer, db.ForeignKey("tenancy.id"), nullable=True)
     rent = db.Column(db.Float, nullable=False)
     security_fee = db.Column(db.Float, nullable=False)
     garbage_fee = db.Column(db.Float, nullable=False)
@@ -50,8 +71,11 @@ class Invoice(db.Model):
     status = db.Column(db.String(20), default="Pending", nullable=False)
     issued_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     due_date = db.Column(db.Date, nullable=True)
+    billing_period = db.Column(db.String(7), nullable=True)
+    invoice_type = db.Column(db.String(30), nullable=False, default="Monthly Rent")
 
     tenant = db.relationship("Tenant", backref="invoices")
+    tenancy = db.relationship("Tenancy", backref="invoices")
 
 
 class MaintenanceRequest(db.Model):
