@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -47,6 +48,8 @@ class Invoice(db.Model):
     water_bill = db.Column(db.Float, nullable=False)
     total_amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default="Pending", nullable=False)
+    issued_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    due_date = db.Column(db.Date, nullable=True)
 
     tenant = db.relationship("Tenant", backref="invoices")
 
@@ -56,6 +59,7 @@ class MaintenanceRequest(db.Model):
     tenant_id = db.Column(db.Integer, db.ForeignKey("tenant.id"), nullable=False)
     description = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(20), default="Pending", nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     tenant = db.relationship("Tenant", backref="maintenance_requests")
 
@@ -65,6 +69,9 @@ class Receipt(db.Model):
     invoice_id = db.Column(db.Integer, db.ForeignKey("invoice.id"), nullable=False)
     amount_paid = db.Column(db.Float, nullable=False)
     balance_due = db.Column(db.Float, nullable=False)
+    payment_method = db.Column(db.String(30), nullable=False, default="Cash")
+    transaction_reference = db.Column(db.String(100), nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     invoice = db.relationship("Invoice", backref="receipts")
 
