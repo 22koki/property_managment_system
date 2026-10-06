@@ -186,8 +186,40 @@ def assign_tenant_to_unit(tenant, unit, start_date=None, include_security=True):
     return tenancy, invoice
 
 
+def bootstrap_missing_tenancies(today=None):
+    """Create lifecycle records for occupants that pre-date the tenancy feature."""
+    today = today or date.today()
+    created = 0
+    occupied_units = Unit.query.filter(Unit.tenant_id.isnot(None)).all()
+
+    for unit in occupied_units:
+        exists = Tenancy.query.filter_by(
+            tenant_id=unit.tenant_id,
+            unit_id=unit.id,
+            active=True,
+        ).first()
+        if exists:
+            continue
+
+        db.session.add(Tenancy(
+            tenant_id=unit.tenant_id,
+            unit_id=unit.id,
+            start_date=today,
+            active=True,
+            auto_invoice=True,
+            last_invoice_date=today,
+            next_invoice_date=add_months(today, 1),
+        ))
+        created += 1
+
+    if created:
+        db.session.commit()
+    return created
+
+
 def run_due_invoices(today=None):
     today = today or date.today()
+    bootstrap_missing_tenancies(today)
     generated = []
     tenancies = Tenancy.query.filter_by(active=True, auto_invoice=True).all()
 
